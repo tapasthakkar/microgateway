@@ -2,9 +2,11 @@
 
 APIGEE_ROOT="/opt/apigee"
 EDGEMICRO_PLUGIN_DIRECTORY="/opt/apigee/plugins"
+
 # Log File on Server.
 LOG_FILE=${APIGEE_ROOT}/logs/edgemicro.log
 echo "Log Location: [ $LOG_FILE ]"
+echo "SIGTERM delay : [ $EDGEMICRO_STOP_DELAY ]"
 
 start_edge_micro() {
   
@@ -132,6 +134,15 @@ my_handler() {
 # SIGTERM-handler
 term_handler() {
   echo "term_handler" >> /tmp/entrypoint.log
+  if [[ -n "$EDGEMICRO_STOP_DELAY" ]]
+    then
+    if [[ $EDGEMICRO_STOP_DELAY -lt 1 || $EDGEMICRO_STOP_DELAY -gt 1800 ]]
+      then
+      EDGEMICRO_STOP_DELAY=5
+    fi
+    echo "term_handler_sleep $EDGEMICRO_STOP_DELAY" >> /tmp/entrypoint.log
+    sleep $EDGEMICRO_STOP_DELAY
+  fi
   /bin/sh -c "cd ${APIGEE_ROOT} && edgemicro stop"  2>&1 | tee -i $LOG_FILE
   exit 143; # 128 + 15 -- SIGTERM
 }
