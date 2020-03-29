@@ -1,20 +1,20 @@
-FROM node:12-alpine
+FROM node:12-buster-slim
 
 COPY installnode.sh /tmp
-COPY --chown=100:101 installedgemicro.sh /tmp
+COPY --chown=101:101 installedgemicro.sh /tmp
 
 # create user and group for microgateway
-RUN apk add --no-cache sed grep && \
-    addgroup -S apigee -g 101 && \
-    adduser -s /bin/sh -u 100 -S -G apigee apigee -h /opt/apigee
+#RUN apk add --no-cache sed grep && \
+RUN addgroup --system --gid 101 apigee && \
+    adduser --shell /bin/bash --uid 101 --system --ingroup apigee --home /opt/apigee apigee
 
 ENV NODE_ENV production
 
 #install node.js
 RUN chmod +x /tmp/installnode.sh && \
-    sh /tmp/installnode.sh && \
+    /bin/bash /tmp/installnode.sh && \
     rm -f /tmp/installnode.sh && \
-    deluser --remove-home node
+    userdel --remove node
 
 USER apigee
 WORKDIR /opt/apigee
@@ -28,10 +28,10 @@ VOLUME /opt/apigee/plugins
 # COPY cert.pem /opt/apigee/.edgemicro
 
 # copy entrypoint
-COPY --chown=100:101 entrypoint.sh /opt/apigee
+COPY --chown=101:101 entrypoint.sh /opt/apigee
 
 # initialize edgemicro
-RUN sh /tmp/installedgemicro.sh&& \
+RUN /bin/bash /tmp/installedgemicro.sh&& \
     rm -f /tmp/installedgemicro.sh
 
 # Expose ports

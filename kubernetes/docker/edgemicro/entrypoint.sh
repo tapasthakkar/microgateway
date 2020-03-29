@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 APIGEE_ROOT="/opt/apigee"
 EDGEMICRO_PLUGIN_DIRECTORY="/opt/apigee/plugins"
@@ -115,9 +115,9 @@ start_edge_micro() {
 
   if [[ -n "$DEBUG" ]]
     then
-    /bin/sh -c "$DEBUG && $CMDSTRING"
+    /bin/bash -c "$DEBUG && $CMDSTRING"
   else
-    /bin/sh -c "$CMDSTRING"
+    /bin/bash -c "$CMDSTRING"
   fi
 
   echo $CMDSTRING
@@ -128,7 +128,7 @@ start_edge_micro  2>&1 | tee -i $LOG_FILE
 # SIGUSR1-handler
 my_handler() {
   echo "my_handler" >> /tmp/entrypoint.log
-  /bin/sh -c "cd ${APIGEE_ROOT} && edgemicro stop" 2>&1  | tee -i $LOG_FILE
+  /bin/bash -c "cd ${APIGEE_ROOT} && edgemicro stop" 2>&1  | tee -i $LOG_FILE
 }
 
 # SIGTERM-handler
@@ -143,7 +143,7 @@ term_handler() {
     echo "term_handler_sleep $EDGEMICRO_STOP_DELAY" >> /tmp/entrypoint.log
     sleep $EDGEMICRO_STOP_DELAY
   fi
-  /bin/sh -c "cd ${APIGEE_ROOT} && edgemicro stop"  2>&1 | tee -i $LOG_FILE
+  /bin/bash -c "cd ${APIGEE_ROOT} && edgemicro stop"  2>&1 | tee -i $LOG_FILE
   exit 143; # 128 + 15 -- SIGTERM
 }
 
