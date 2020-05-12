@@ -17,6 +17,7 @@ const jsdiff = require('diff');
 const _ = require('lodash');
 //const os = require('os');
 const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const AdminServer = require('microgateway-core').AdminServer;
 edgeconfig.setConsoleLogger(writeConsoleLog);
 const Gateway = function() {};
 
@@ -136,6 +137,11 @@ Gateway.prototype.start = (options,cb) => {
         if (options.processes) {
             opt.workers = Number(options.processes);
         }
+
+        const adminServer = AdminServer(config.edgemicro.port+1, config.edgemicro.address, config.edgemicro.ssl);
+        adminServer.setCacheConfig(config);
+        adminServer.start();
+        opt.adminServer = adminServer;
         var mgCluster = reloadCluster(path.join(__dirname, 'start-agent.js'), opt);
         var server = net.createServer();
         server.listen(ipcPath);
@@ -224,6 +230,7 @@ Gateway.prototype.start = (options,cb) => {
                     if (isConfigChanged) {
                         writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'Configuration change detected. Saving new config and Initiating reload');
                         edgeconfig.save(newConfig, cache);
+                        adminServer.setCacheConfig(newConfig);
                         clientSocket.sendMessage({
                             command: 'reload'
                         });
