@@ -130,6 +130,7 @@ Gateway.prototype.start = (options,cb) => {
                 args.pluginDir = path.resolve(config.edgemicro.plugins.dir);
             }
         }
+        args['metrics'] = options.metrics;
         opt.args = [JSON.stringify(args)];
         opt.timeout = 10;
         opt.logger = gateway.Logging.getLogger();
@@ -138,10 +139,13 @@ Gateway.prototype.start = (options,cb) => {
             opt.workers = Number(options.processes);
         }
 
-        const adminServer = AdminServer(config.edgemicro.port+1, config.edgemicro.address, config.edgemicro.ssl);
-        adminServer.setCacheConfig(config);
-        adminServer.start();
-        opt.adminServer = adminServer;
+        let adminServer = null;
+        if(options.metrics){
+            adminServer = AdminServer(config.edgemicro.port+1, config.edgemicro.address, config.edgemicro.ssl);
+            adminServer.setCacheConfig(config);
+            adminServer.start();
+            opt.adminServer = adminServer;
+        }
         var mgCluster = reloadCluster(path.join(__dirname, 'start-agent.js'), opt);
         var server = net.createServer();
         server.listen(ipcPath);
@@ -230,7 +234,9 @@ Gateway.prototype.start = (options,cb) => {
                     if (isConfigChanged) {
                         writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'Configuration change detected. Saving new config and Initiating reload');
                         edgeconfig.save(newConfig, cache);
-                        adminServer.setCacheConfig(newConfig);
+                        if ( adminServer ) {
+                            adminServer.setCacheConfig(newConfig);
+                        }
                         clientSocket.sendMessage({
                             command: 'reload'
                         });

@@ -557,7 +557,7 @@ class ClusterManager extends EventEmitter {
       //
       // whenever worker sends a message, emit it to the channels
       worker.on('message', (message) => {
-        if ( message && typeof message === 'object' && message.type === 'metricsData') {
+        if ( message && typeof message === 'object' && message.type === 'metricsData' && this.adminServer) {
           this.adminServer.addMetricsRecord(message.data);
           return;
         }
