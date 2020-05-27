@@ -141,7 +141,16 @@ Gateway.prototype.start = (options,cb) => {
 
         let adminServer = null;
         if(options.metrics){
-            adminServer = AdminServer(config.edgemicro.port+1, config.edgemicro.address, config.edgemicro.ssl);
+            let port = config.edgemicro.port + 1;
+            if ( config.metrics && config.metrics.port ) {
+                port = config.metrics.port;
+            }
+            let rolloverAllFlag = false;
+           
+            if ( config.metrics && config.metrics.rollover_all ) {
+                rolloverAllFlag = config.metrics.rollover_all;
+            }
+            adminServer = new AdminServer(port, config.edgemicro.address, config.edgemicro.ssl, rolloverAllFlag);
             adminServer.setCacheConfig(config);
             adminServer.start();
             opt.adminServer = adminServer;
