@@ -265,6 +265,15 @@ Gateway.prototype.start = (options,cb) => {
             writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, "Calling cb");
             cb();
         }
+
+        if ( process.env.EMG_HEAPDUMP_MODE ) {
+            try {
+                require('../../tests/heapdump_test').masterHeapDump();
+            } catch(e){
+
+            }
+        }
+        
     };
 
     const sourceConfig = edgeconfig.load(configOptions);
