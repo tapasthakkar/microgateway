@@ -129,7 +129,7 @@ module.exports = function() {
         .action((options) => {
             options.error = optionError(options);
             options.token = options.token || process.env.EDGEMICRO_SAML_TOKEN;
-            
+            options.noncpsOrg = true;
             if (!options.token) {
                 if (!options.username) {
                     return options.error('username is required');
