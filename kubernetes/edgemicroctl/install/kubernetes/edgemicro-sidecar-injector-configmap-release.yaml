@@ -27,7 +27,7 @@ data:
         image: gcr.io/apigee-microgateway/edgemicro:latest
         securityContext:
           runAsNonRoot: true
-          runAsUser: 100
+          runAsUser: 101
           runAsGroup: 101
         ports:
         - containerPort: 8000
