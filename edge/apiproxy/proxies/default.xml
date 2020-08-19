@@ -105,9 +105,6 @@
         <Request/>
         <Response/>
     </PostFlow>
-    <RouteRule name="uapcollector">
-        <Condition>proxy.pathsuffix MatchesPath "/analytics/**"</Condition>
-    </RouteRule>
     <HTTPProxyConnection>
         <BasePath>/edgemicro</BasePath>
         <VirtualHost>default</VirtualHost>
