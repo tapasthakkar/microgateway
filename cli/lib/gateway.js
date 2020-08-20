@@ -17,6 +17,7 @@ const jsdiff = require('diff');
 const _ = require('lodash');
 //const os = require('os');
 const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const AdminServer = require('microgateway-core').AdminServer;
 edgeconfig.setConsoleLogger(writeConsoleLog);
 const Gateway = function() {};
 
@@ -129,12 +130,30 @@ Gateway.prototype.start = (options,cb) => {
                 args.pluginDir = path.resolve(config.edgemicro.plugins.dir);
             }
         }
+        args['metrics'] = options.metrics;
         opt.args = [JSON.stringify(args)];
         opt.timeout = 10;
         opt.logger = gateway.Logging.getLogger();
         //Let reload cluster know how many processes to use if the user doesn't want the default
         if (options.processes) {
             opt.workers = Number(options.processes);
+        }
+
+        let adminServer = null;
+        if(options.metrics){
+            let port = config.edgemicro.port + 1;
+            if ( config.metrics && config.metrics.port ) {
+                port = config.metrics.port;
+            }
+            let rolloverAllFlag = false;
+           
+            if ( config.metrics && config.metrics.rollover_all ) {
+                rolloverAllFlag = config.metrics.rollover_all;
+            }
+            adminServer = new AdminServer(port, config.edgemicro.address, config.edgemicro.ssl, rolloverAllFlag);
+            adminServer.setCacheConfig(config);
+            adminServer.start();
+            opt.adminServer = adminServer;
         }
         var mgCluster = reloadCluster(path.join(__dirname, 'start-agent.js'), opt);
         var server = net.createServer();
@@ -224,6 +243,9 @@ Gateway.prototype.start = (options,cb) => {
                     if (isConfigChanged) {
                         writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'Configuration change detected. Saving new config and Initiating reload');
                         edgeconfig.save(newConfig, cache);
+                        if ( adminServer ) {
+                            adminServer.setCacheConfig(newConfig);
+                        }
                         clientSocket.sendMessage({
                             command: 'reload'
                         });

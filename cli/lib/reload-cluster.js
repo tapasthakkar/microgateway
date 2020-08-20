@@ -241,6 +241,7 @@ class ClusterManager extends EventEmitter {
     //
     this.opt = {}
     this.numWorkers = opt.workers
+    this.adminServer = opt.adminServer;
     this.optionDefaults(opt)
     //
     this.readyEvent = 'listening'
@@ -556,6 +557,11 @@ class ClusterManager extends EventEmitter {
       //
       // whenever worker sends a message, emit it to the channels
       worker.on('message', (message) => {
+        if ( message && typeof message === 'object' && message.type === 'metricsData' && this.adminServer) {
+          this.adminServer.addMetricsRecord(message.data);
+          return;
+        }
+       
         if ( this.opt.logger ) {
           this.opt.logger.writeLogRecord(message);
         }
