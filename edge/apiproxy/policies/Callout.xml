@@ -3,7 +3,7 @@
     <DisplayName>Callout</DisplayName>
     <Properties>
         <Property name="PROXY_NAME_PREFIX">edgemicro_</Property>
-        <Property name="REGION_MAP">DN=edgemicroservices.apigee.net,US-EAST-1=edgemicroservices-us-east-1.apigee.net,US-WEST-2=edgemicroservices-us-west-2.apigee.net,EU-WEST-1=edgemicroservices-eu-west-1.apigee.net,AP-NORTHEAST-1=edgemicroservices-ap-northeast-1.apigee.net</Property>
+        <Property name="org.noncps">true</Property>
     </Properties>
     <ClassName>com.apigee.edgemicro.javacallout.Callout</ClassName>
     <ResourceURL>java://edge-micro-javacallout-1.0.0.jar</ResourceURL>
