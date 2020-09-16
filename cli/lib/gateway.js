@@ -306,7 +306,9 @@ Gateway.prototype.reload = (options) => {
     socket.on('connect', () => {
         edgeconfig.get({
             source: source,
-            keys: keys
+            keys: keys,
+            org: options.org,
+            env: options.env
         }, (err, config) => {
             if (err) {
                 const exists = fs.existsSync(cache);
