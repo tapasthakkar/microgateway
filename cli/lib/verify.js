@@ -146,6 +146,9 @@ Verify.prototype.verify = function verify(options) {
       const prods = Object.keys(downloadedConfig.quota);
 
       async.each(prods, function (prod, eachCb) {
+        if ( !downloadedConfig.quota[prod] ||  !downloadedConfig.quota[prod].uri ) {
+          return eachCb();
+        }
         request({
           method: 'POST',
           uri: downloadedConfig.quota[prod].uri + '/v2/quotas/apply',
