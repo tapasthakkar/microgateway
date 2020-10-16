@@ -120,6 +120,7 @@ Gateway.prototype.start = (options,cb) => {
             }
             edgeconfig.save(config, cache);
         }
+        config = edgeconfig.replaceEnvTags(config, { writeConsoleLog });
         config.uid = uuid();
         initializeMicroGatewayLogging(config, options);
         var opt = {};
@@ -239,19 +240,20 @@ Gateway.prototype.start = (options,cb) => {
                 }
                 else {
                     pollInterval = config.edgemicro.config_change_poll_interval ? config.edgemicro.config_change_poll_interval : pollInterval;
-                    var isConfigChanged = hasConfigChanged(oldConfig, newConfig);
+                    const newConfigEnvReplaced = edgeconfig.replaceEnvTags(newConfig, { writeConsoleLog });
+                    var isConfigChanged = hasConfigChanged(oldConfig,  newConfigEnvReplaced);
                     if (isConfigChanged) {
                         writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'Configuration change detected. Saving new config and Initiating reload');
                         edgeconfig.save(newConfig, cache);
                         if ( adminServer ) {
-                            adminServer.setCacheConfig(newConfig);
+                            adminServer.setCacheConfig(newConfigEnvReplaced);
                         }
                         clientSocket.sendMessage({
                             command: 'reload'
                         });
                     }
                     setTimeout(() => {
-                        reloadOnConfigChange(newConfig, cache, opts);
+                        reloadOnConfigChange(newConfigEnvReplaced, cache, opts);
                     }, pollInterval * 1000);
                 }
             });
@@ -276,7 +278,7 @@ Gateway.prototype.start = (options,cb) => {
         
     };
 
-    const sourceConfig = edgeconfig.load(configOptions);
+    const sourceConfig = edgeconfig.replaceEnvTags(edgeconfig.load(configOptions), { writeConsoleLog });
     
     if(sourceConfig.edge_config.synchronizerMode === START_SYNCHRONIZER) { 
         edgeconfig.get(configOptions, startSynchronizer);
