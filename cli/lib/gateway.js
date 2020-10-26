@@ -124,7 +124,6 @@ Gateway.prototype.start = (options,cb) => {
         config.uid = uuid();
         initializeMicroGatewayLogging(config, options);
         var opt = {};
-        delete args.keys;
         //set pluginDir
         if (!args.pluginDir) {
             if (config.edgemicro.plugins && config.edgemicro.plugins.dir) {
