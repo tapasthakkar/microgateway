@@ -120,7 +120,7 @@ Gateway.prototype.start = (options,cb) => {
             }
             edgeconfig.save(config, cache);
         }
-        config = edgeconfig.replaceEnvTags(config, { writeConsoleLog });
+        config = edgeconfig.replaceEnvTags(config, { disableLogs: true  });
         config.uid = uuid();
         initializeMicroGatewayLogging(config, options);
         var opt = {};
@@ -240,7 +240,7 @@ Gateway.prototype.start = (options,cb) => {
                 }
                 else {
                     pollInterval = config.edgemicro.config_change_poll_interval ? config.edgemicro.config_change_poll_interval : pollInterval;
-                    const newConfigEnvReplaced = edgeconfig.replaceEnvTags(newConfig, { writeConsoleLog });
+                    const newConfigEnvReplaced = edgeconfig.replaceEnvTags(newConfig, { disableLogs: true  });
                     var isConfigChanged = hasConfigChanged(oldConfig,  newConfigEnvReplaced);
                     if (isConfigChanged) {
                         writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'Configuration change detected. Saving new config and Initiating reload');
@@ -277,8 +277,8 @@ Gateway.prototype.start = (options,cb) => {
         }
         
     };
-
-    const sourceConfig = edgeconfig.replaceEnvTags(edgeconfig.load(configOptions), { writeConsoleLog });
+    configOptions.envTagsReplacerOptions = { disableLogs: true  }
+    const sourceConfig = edgeconfig.load(configOptions);
     
     if(sourceConfig.edge_config.synchronizerMode === START_SYNCHRONIZER) { 
         edgeconfig.get(configOptions, startSynchronizer);
