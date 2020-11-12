@@ -4702,9 +4702,8 @@
       }
     },
     "microgateway-config": {
-      "version": "3.1.6",
-      "resolved": "https://registry.npmjs.org/microgateway-config/-/microgateway-config-3.1.6.tgz",
-      "integrity": "sha512-IzYsw/5gDo18Y2XHkZ1aTdC5G4EZH+3FXDhO7C1Vl/KrWJVqB+XmVoNX0RS+f4hVyJcIpYB9apLL3FEnkZSj0Q==",
+      "version": "github:apigee/microgateway-config#1ce9a4a6a8c0d59a03c92fecc7da05cf02b3a58f",
+      "from": "github:apigee/microgateway-config#for-3.1.8",
       "requires": {
         "apigeetool": "^0.14.2",
         "async": "^1.5.2",
@@ -8062,14 +8061,13 @@
       }
     },
     "microgateway-core": {
-      "version": "3.1.8",
-      "resolved": "https://registry.npmjs.org/microgateway-core/-/microgateway-core-3.1.8.tgz",
-      "integrity": "sha512-snbcIzuiF1ftvraFQpgsxhF9rX7Rze8pK5Rx1K0K3ibiQ4FBrJ7vmwe5TI2dyqB9EIa7Pf3FZdN8QNb9F5Va8w==",
+      "version": "github:apigee/microgateway-core#831dd6925a29c90df7713a50fdf9bdcab2ccf7c8",
+      "from": "github:apigee/microgateway-core#for-3.1.8",
       "requires": {
         "async": "~1.5.2",
         "debug": "~3.1.0",
         "lodash": "^4.17.19",
-        "microgateway-config": "^3.1.6",
+        "microgateway-config": "github:apigee/microgateway-config#for-3.1.8",
         "minimatch": "^3.0.4",
         "opentracing": "^0.14.3",
         "request": "~2.87.0",
@@ -10130,9 +10128,8 @@
           }
         },
         "microgateway-config": {
-          "version": "3.1.6",
-          "resolved": "https://registry.npmjs.org/microgateway-config/-/microgateway-config-3.1.6.tgz",
-          "integrity": "sha512-IzYsw/5gDo18Y2XHkZ1aTdC5G4EZH+3FXDhO7C1Vl/KrWJVqB+XmVoNX0RS+f4hVyJcIpYB9apLL3FEnkZSj0Q==",
+          "version": "github:apigee/microgateway-config#1ce9a4a6a8c0d59a03c92fecc7da05cf02b3a58f",
+          "from": "github:apigee/microgateway-config#for-3.1.8",
           "requires": {
             "apigeetool": "^0.14.2",
             "async": "^1.5.2",
@@ -15412,14 +15409,12 @@
       }
     },
     "microgateway-edgeauth": {
-      "version": "3.1.1",
-      "resolved": "https://registry.npmjs.org/microgateway-edgeauth/-/microgateway-edgeauth-3.1.1.tgz",
-      "integrity": "sha512-wBzXStr6XZtr9BXVk6LCno4tMtK5eQPKHPnID4mC6T3pmIouJJW8HkCVAwSpV8N4nDmxgBim83inLkAR8ML6Vw=="
+      "version": "github:apigee/microgateway-edgeauth#0cf76dc7ccaee554c296ac3f6a9692e814e68274",
+      "from": "github:apigee/microgateway-edgeauth#for-3.1.8"
     },
     "microgateway-plugins": {
-      "version": "3.1.2",
-      "resolved": "https://registry.npmjs.org/microgateway-plugins/-/microgateway-plugins-3.1.2.tgz",
-      "integrity": "sha512-YLu1GKjTf5Mlg1d4j37HiQ4+e2RsnROx/jFh8o40aeuRpy/5T5xfTXLAg/28oJOgIDEc2lzkjJyUkEv0Hy6J8w==",
+      "version": "github:apigee/microgateway-plugins#7ca57440fcf598439b2a7ba344e606e7dd3d3c74",
+      "from": "github:apigee/microgateway-plugins#for-3.1.8",
       "requires": {
         "async": "^1.4.2",
         "debug": "^3.1.0",
