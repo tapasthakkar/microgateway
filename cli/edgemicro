@@ -45,7 +45,7 @@ for (var ver in experimental) {
 var majorVersion = parseInt(version.split(".")[0].replace("v", ""));
 
 if (majorVersion == 8) {
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},"current nodejs version is " + version + " Note, v8.x.x will be out of support soon, see https://docs.apigee.com/release/notes/edge-microgateway-release-notes-0");
+    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},"Current NodeJS version is " + version + ".  Note, v8.x.x will be out of support soon. For more details, please see https://docs.apigee.com/release/notes/edge-microgateway-release-notes-0");
 }
 
 if (majorVersion < ltsVersion || majorVersion > latest) {
