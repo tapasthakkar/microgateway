@@ -43,7 +43,7 @@
     "eslint": "^6.1.0",
     "eslint-config-google": "^0.13.0",
     "gulp": "^4.0.2",
-    "gulp-shell": "^0.6.5",
+    "gulp-shell": "^0.8.0",
     "gulp-sourcemaps": "^1.5.2",
     "jshint-stylish": "^2.2.1",
     "minimist": "^1.1.1",
@@ -52,7 +52,6 @@
     "request-promise": "^4.2.4",
     "restify": "^8.4.0",
     "rewire": "^4.0.1",
-    "run-sequence": "^1.1.0",
     "test-until": "^1.1.1"
   },
   "scripts": {
