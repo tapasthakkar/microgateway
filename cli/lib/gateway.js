@@ -59,16 +59,15 @@ Gateway.prototype.start = (options,cb) => {
 
     const source = configLocations.getSourcePath(options.org, options.env, options.configDir);
     const cache = configLocations.getCachePath(options.org, options.env, options.configDir);
-    const configurl = options.configUrl;   
+    const configurl = options.configUrl;
     
     const keys = {
-        key: options.key,
-        secret: options.secret
+        key: options.key || process.env.EDGEMICRO_KEY,
+        secret: options.secret || process.env.EDGEMICRO_SECRET
     };
 
     var args = {
         target: cache,
-        keys: keys,
         pluginDir: options.pluginDir
     };
 
@@ -131,6 +130,11 @@ Gateway.prototype.start = (options,cb) => {
                 args.pluginDir = path.resolve(config.edgemicro.plugins.dir);
             }
         }
+
+        if(options.key && options.secret){
+            args.keys = keys;
+        }
+
         args['metrics'] = options.metrics;
         opt.args = [JSON.stringify(args)];
         opt.timeout = 10;

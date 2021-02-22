@@ -147,8 +147,8 @@ const setup = function setup() {
         .description('start the gateway based on configuration')
         .action((options) => {
             options.error = optionError(options);
-            options.secret = options.secret || process.env.EDGEMICRO_SECRET;
-            options.key = options.key || process.env.EDGEMICRO_KEY;
+            options.secret = options.secret;
+            options.key = options.key;
             options.org = options.org || process.env.EDGEMICRO_ORG;
             options.env = options.env || process.env.EDGEMICRO_ENV;
             options.processes = options.processes || process.env.EDGEMICRO_PROCESSES;
@@ -173,10 +173,10 @@ const setup = function setup() {
 
                     });
             }
-            if (!options.key && !process.env.EDGEMICRO_LOCAL) {
+            if (!options.key && !process.env.EDGEMICRO_LOCAL && !process.env.EDGEMICRO_KEY) {
                 return options.error('key is required');
             }
-            if (!options.secret && !process.env.EDGEMICRO_LOCAL) {
+            if (!options.secret && !process.env.EDGEMICRO_LOCAL && !process.env.EDGEMICRO_SECRET) {
                 return options.error('secret is required');
             }
             if (!options.org) {
