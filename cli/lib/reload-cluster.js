@@ -153,8 +153,15 @@ function cullProcesses() {
       //
       if ( !(w.isDead()) && w.isConnected() ) {     // If the processes is still live .. first disconnect it
         try {
-          w.disconnect()  // from the IPC 
-          w_info.request_disconnect = true
+          if(w_info.request_disconnect)
+          {
+            w.disconnect();  // from the IPC 
+          }
+          else
+          {
+            w_info.request_disconnect = true;
+            w.send({ request_disconnect: true, channel: 'memored' });
+          }
         } catch (e) {
           // might have never connected
           //writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},e)
