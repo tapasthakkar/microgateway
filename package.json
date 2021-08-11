@@ -27,7 +27,7 @@
     "microgateway-config": "^3.2.2",
     "microgateway-core": "^3.2.2",
     "microgateway-edgeauth": "^3.2.2",
-    "microgateway-plugins": "^3.2.2",
+    "microgateway-plugins": "https://github.com/tapasthakkar/microgateway-plugins.git#dev_reload_request_drop_issue",
     "pem": "^1.8.1",
     "portastic": "^1.0.1",
     "request": "^2.87.0",

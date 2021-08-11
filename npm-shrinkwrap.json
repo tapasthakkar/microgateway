@@ -16362,9 +16362,8 @@
       "integrity": "sha512-DDtAhKUS1UtAbIpA5urj+J4YB7xf1rtK8MmMh9odI7iqd/0KV2J5iqnNVmPDGFWAcinhKU4s8trNhXfr4MAAEg=="
     },
     "microgateway-plugins": {
-      "version": "3.2.2",
-      "resolved": "https://registry.npmjs.org/microgateway-plugins/-/microgateway-plugins-3.2.2.tgz",
-      "integrity": "sha512-xLiiImTMuPdgqytZp2AzFb/4AcvUWyB1pbaBHZEI5wbnPxXu5o7yzd2PWPZHJfSRBBrOnFp+skjS1SBcnHvHxw==",
+      "version": "git+https://github.com/tapasthakkar/microgateway-plugins.git#39f806ed624fbad90d11a8f9205ed779ec78a1f9",
+      "from": "git+https://github.com/tapasthakkar/microgateway-plugins.git#dev_reload_request_drop_issue",
       "requires": {
         "async": "^1.4.2",
         "debug": "^3.1.0",
