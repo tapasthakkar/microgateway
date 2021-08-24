@@ -3,7 +3,7 @@
 var cluster = require('cluster');
 var EventEmitter = require('events').EventEmitter;
 var cpuCount = require('os').cpus().length;
-const cache = require('microgateway-plugins').memored;
+const cache = require('microgateway-plugins').emgCache;
 
 const PURGE_INTERVAL = 60000;
 
@@ -189,7 +189,7 @@ var ReloadCluster = (file, opt) => {
    */
   self.run = () => {
     if (!cluster.isMaster) return;
-    //setup memored - a cache shared between worker processes. intro in 2.5.9
+    // setup emgCache (wrapper above memored) - a cache shared between worker processes. intro in 3.2.3
     cache.setup({
         purgeInterval: PURGE_INTERVAL
     });

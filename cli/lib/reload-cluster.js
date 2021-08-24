@@ -3,7 +3,7 @@
 var cluster = require('cluster');
 var EventEmitter = require('events').EventEmitter;
 var cpuCount = require('os').cpus().length;
-const cache = require('microgateway-plugins').memored;
+const cache = require('microgateway-plugins').emgCache;
 const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway reload cluster';
@@ -153,8 +153,14 @@ function cullProcesses() {
       //
       if ( !(w.isDead()) && w.isConnected() ) {     // If the processes is still live .. first disconnect it
         try {
-          w.disconnect()  // from the IPC 
-          w_info.request_disconnect = true
+          if(w_info.request_disconnect) {
+            w.disconnect();  // from the IPC 
+          }
+          else {            
+            w_info.request_disconnect = true;
+            w.send({ request_disconnect: true });
+            console.log(`[${w.process.pid}] sending disconnect request signal to worker`);
+          }
         } catch (e) {
           // might have never connected
           //writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},e)
@@ -286,7 +292,7 @@ class ClusterManager extends EventEmitter {
 
   // --initializeCache--------------------------------------- 
   initializeCache() {
-    //setup memored - a cache shared between worker processes. intro in 2.5.9
+    // setup emgCache (wrapper above memored) - a cache shared between worker processes. intro in 3.2.3
     cache.setup({
       purgeInterval: PURGE_INTERVAL
     });
