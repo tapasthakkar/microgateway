@@ -26,7 +26,7 @@ const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
 const version = process.version;
 const ltsVersion = 10;
 const experimental = ["v11","v13"];
-const latest = 14;
+const latest = 16;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway edgemicro';
 
