@@ -148,7 +148,20 @@ Private.prototype.configureEdgeMicroInternalProxy = function configureEdgeMicroI
         },
         function(calloutObj, cb) {
             // change proxy url
-            calloutObj.JavaCallout.Properties[0].Property[1]['_'] = 'DN=' + that.runtimeUrl;
+            const regionSearch = _.findIndex(calloutObj.JavaCallout.Properties[0].Property, function(prop) {
+                return prop['$'].name === 'REGION_MAP';
+            });
+            
+            if (regionSearch === -1) {
+                calloutObj.JavaCallout.Properties[0].Property.push({
+                    '_': `DN=${that.runtimeUrl}`,
+                    '$': {
+                        name: 'REGION_MAP'
+                    }
+                });
+            } else {
+                calloutObj.JavaCallout.Properties[0].Property[regionSearch]['_'] = `DN=${that.runtimeUrl}`;
+            }
 
             // add management server location
             const mgmtSearch = _.findIndex(calloutObj.JavaCallout.Properties[0].Property, function(prop) {
