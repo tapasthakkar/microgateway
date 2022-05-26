@@ -8,7 +8,7 @@
     "edgemicro": "./cli/edgemicro"
   },
   "dependencies": {
-    "apigeetool": "^0.15.1",
+    "apigeetool": "^0.16.1",
     "async": "^2.6.4",
     "body-parser": "^1.19.0",
     "cli-prompt": "^0.5.0",
@@ -46,7 +46,7 @@
     "gulp-shell": "^0.8.0",
     "gulp-sourcemaps": "^1.5.2",
     "jshint-stylish": "^2.2.1",
-    "minimist": "^1.1.1",
+    "minimist": "^1.2.6",
     "mocha": "^9.2.0",
     "nyc": "^15.1.0",
     "request-promise": "^4.2.4",
