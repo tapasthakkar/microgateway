@@ -27,7 +27,7 @@
     "microgateway-config": "^3.3.1",
     "microgateway-core": "^3.3.1",
     "microgateway-edgeauth": "^3.2.2",
-    "microgateway-plugins": "^3.3.1",
+    "microgateway-plugins": "apigee/microgateway-plugins#for-3.3.2",
     "pem": "^1.8.1",
     "portastic": "^1.0.1",
     "request": "^2.87.0",
