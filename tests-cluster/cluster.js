@@ -2,7 +2,7 @@
 
 const assert = require('assert');
 const async = require('async');
-const request = require('request');
+const request = require('postman-request');
 const envVars = require('../tests/env')
 const tokenService = require('../cli/lib/token')();
 const edgeConfig = require('microgateway-config');

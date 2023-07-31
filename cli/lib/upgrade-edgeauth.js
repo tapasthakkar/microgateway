@@ -2,7 +2,7 @@
 
 //const util = require("util");
 //const debug = require("debug")("jwkrotatekey");
-//const request = require("request");
+//const request = require('postman-request');
 var deployAuthLib = require('./deploy-auth');
 var deployAuth;
 
