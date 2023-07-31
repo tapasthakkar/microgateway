@@ -1,6 +1,6 @@
 'use strict';
 
-var request = require('request');
+var request = require('postman-request');
 var url = require('url');
 var fs = require('fs');
 var run = require('./cli/lib/gateway')();

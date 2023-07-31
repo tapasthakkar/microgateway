@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('assert');
-const request = require('request');
+const request = require('postman-request');
 const url = require('url');
 const util = require('util');
 const denv = require('dotenv');
