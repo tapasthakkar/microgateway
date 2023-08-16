@@ -24,8 +24,8 @@
     "jsonwebtoken": "^9.0.1",
     "lodash": "^4.17.19",
     "log-symbols": "^1.0.2",
-    "microgateway-config": "^3.3.1",
-    "microgateway-core": "^3.3.1",
+    "microgateway-config": "apigee/microgateway-config#for-3.3.2",
+    "microgateway-core": "apigee/microgateway-core#for-3.3.2",
     "microgateway-edgeauth": "^3.2.2",
     "microgateway-plugins": "apigee/microgateway-plugins#for-3.3.2",
     "pem": "^1.8.1",
@@ -81,20 +81,15 @@
     "url": "https://github.com/apigee-internal/microgateway/issues"
   },
   "homepage": "https://github.com/apigee-internal/microgateway#readme",
-  "contributors": [
-    "Prabhat Jha <prabhat143@gmail.com> (https://github.com/prabhatjha)",
-    "Sean Williams (https://github.com/swilliams11)",
-    "Noah Dietz <noahdietz24@gmail.com> (https://github.com/noahdietz)",
-    "Shawn Feldman (https://github.com/shawnfeldman)",
-    "Kevin Swiber <kswiber@gmail.com> (https://github.com/kevinswiber)",
-    "Matt Dobson <mdobson@apigee.com> (https://github.com/mdobson)",
-    "Mitch Fierro <fierro.mitch@gmail.com> (https://github.com/f1erro)",
+    "contributors": [
+    "Tapas Thakkar <tapasthakkar@gmail.com> (https://github.com/tapasthakkar)",
+    "Keyur Karnik <keyur.karnik+github@gmail.com> (https://github.com/keyurkarnik)",
     "Srinandan Sridhar <nandanks@gmail.com> (https://github.com/srinandan)"
   ],
   "author": "Kevin Swiber <kswiber@gmail.com>",
   "engines": {
-    "node": "^10 || ^12 || ^14 || ^16",
-    "npm": ">=3.10.8"
+    "node": "^16 || ^18 || ^20",
+    "npm": ">=6.14.18"
   },
   "cpu": [
     "!arm",
