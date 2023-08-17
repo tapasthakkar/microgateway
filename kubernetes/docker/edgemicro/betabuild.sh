@@ -2,17 +2,29 @@
 
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+echo DIR is $DIR
 
-if [ $# -ne 1 ]; then 
-	echo "Please provide GCP project id"
+if [ $# -ne 2 ]; then
+	echo "Please provide edgemicro version and GCP project id"
         exit 1
 fi
 
-project_id=$1
+version=$1
+project_id=$2
 
-docker build -t edgemicro:beta $DIR -f Dockerfile.beta
+#us-west1-docker.pkg.dev/apigee-microgateway/edgemicro-beta
 
 if [ $# -eq 2 ]; then
-  docker tag edgemicro:$version gcr.io/$project_id/edgemicro:beta
-  docker push gcr.io/$project_id/edgemicro:beta
+
+  sed -i .bak  "s/ *edgemicro.*/ apigee-internal\/microgateway#$version/g" installnode.sh
+  docker build --no-cache -t edgemicro-beta:$version $DIR -f Dockerfile.beta
+  docker tag edgemicro-beta:$version us-west1-docker.pkg.dev/$project_id/edgemicro-beta/emg:$version
+  docker tag edgemicro-beta:$version us-west1-docker.pkg.dev/$project_id/edgemicro-beta/emg:beta
+  docker push us-west1-docker.pkg.dev/$project_id/edgemicro-beta/emg:$version
+  docker push us-west1-docker.pkg.dev/$project_id/edgemicro-beta/emg:beta
+  rm installnode.sh
+  mv installnode.sh.bak installnode.sh
+
 fi
+
+

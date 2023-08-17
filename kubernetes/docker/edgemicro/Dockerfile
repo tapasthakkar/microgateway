@@ -1,4 +1,4 @@
-FROM node:14.19-buster-slim
+FROM node:18.17-buster-slim
 
 COPY installnode.sh /tmp
 COPY --chown=101:101 installedgemicro.sh /tmp
