@@ -1,12 +1,12 @@
 {
   "name": "edgemicro",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "edgemicro",
-      "version": "3.3.1",
+      "version": "3.3.2",
       "cpu": [
         "!arm",
         "!mips"
