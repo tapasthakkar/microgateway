@@ -327,6 +327,7 @@ const setup = function setup() {
         .option('-a,--action <action>', 'action can be start or stop; default is start')
         .description('Start microgateway using forever-monitor')
         .action((options) => {
+            writeConsoleLog('warn', {component: CONSOLE_LOG_TAG_COMP}, '\x1b[33m%s\x1b[0m','Warning: "edgemicro forever" is deprecated and will be removed in the next major release of EMG.');
             options.action = options.action || "start";
             options.error = optionError(options);
             if (options.file) {
