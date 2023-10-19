@@ -4,7 +4,6 @@ const commander = require('commander');
 const url = require('url');
 const fs = require('fs');
 const os = require('os');
-const path = require('path');
 const debug = require('debug')('start');
 const request = require('request');
 const configure = require('./lib/configure')();
@@ -14,12 +13,8 @@ const rotatekey = require('./lib/rotate-key')();
 const verify = require('./lib/verify')();
 const run = require('./lib/gateway')();
 const keyGenerator = require('./lib/key-gen')();
-const configLocations = require('../config/locations');
 const prompt = require('cli-prompt');
 const init = require('./lib/init');
-var foreverOptions = require('../forever.json');
-const forever = require('forever-monitor');
-const pidpath = configLocations.getPIDFilePath();
 var portastic = require('portastic');
 const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
 
@@ -62,7 +57,7 @@ const setup = function setup() {
                     return options.error('env is required');
                 }
                 options.configDir = options.configDir || process.env.EDGEMICRO_CONFIG_DIR;
-                configure.configure(options, () => {});
+                configure.configure(options, () => { });
 
             } else {
                 //If there is no token then we can go through the password process
@@ -85,7 +80,7 @@ const setup = function setup() {
                     if (!options.password) {
                         return options.error('password is required');
                     }
-                    configure.configure(options, () => {});
+                    configure.configure(options, () => { });
                 })
             }
 
@@ -99,7 +94,7 @@ const setup = function setup() {
         .action((options) => {
             options.configDir = options.configDir || process.env.EDGEMICRO_CONFIG_DIR;
             init(options, (err, location) => {
-                writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},"config initialized to %s", location)
+                writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, "config initialized to %s", location)
             })
         });
 
@@ -165,7 +160,7 @@ const setup = function setup() {
 
             if (options.port) {
                 portastic.test(options.port)
-                    .then(function(isAvailable) {
+                    .then(function (isAvailable) {
                         if (!isAvailable) {
                             options.error('port is not available.');
                             process.exit(1);
@@ -225,9 +220,9 @@ const setup = function setup() {
 
                 if (parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:") {
                     debug("downloading file...");
-                    request.get(options.configUrl, function(error, response, body) {
+                    request.get(options.configUrl, function (error, response, body) {
                         if (error) {
-                            writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},"config file did not download: " + error);
+                            writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, "config file did not download: " + error);
                             process.exit(1);
                         }
                         try {
@@ -235,12 +230,12 @@ const setup = function setup() {
                             fs.writeFileSync(filePath, body, 'utf8');
                             run.start(options);
                         } catch (err) {
-                            writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},"config file could not be written: " + err);
+                            writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, "config file could not be written: " + err);
                             process.exit(1);
                         }
                     });
                 } else {
-                    writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},"url protocol not supported: " + parsedUrl.protocol);
+                    writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, "url protocol not supported: " + parsedUrl.protocol);
                     process.exit(1);
                 }
             } else {
@@ -289,9 +284,9 @@ const setup = function setup() {
 
                 if (parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:") {
                     debug("downloading file...");
-                    request.get(options.configUrl, function(error, response, body) {
+                    request.get(options.configUrl, function (error, response, body) {
                         if (error) {
-                            writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},"config file did not download: " + error);
+                            writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, "config file did not download: " + error);
                             process.exit(1);
                         }
                         try {
@@ -299,7 +294,7 @@ const setup = function setup() {
                             fs.writeFileSync(filePath, body, 'utf8');
                             run.reload(options);
                         } catch (err) {
-                            writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},"config file could not be written: " + err);
+                            writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, "config file could not be written: " + err);
                             process.exit(1);
                         }
                     });
@@ -319,59 +314,6 @@ const setup = function setup() {
         .description('Status of the edgemicro cluster')
         .action((options) => {
             run.status(options);
-        });
-
-    commander
-        .command('forever')
-        .option('-f, --file <file>', 'forever-monitor options file')
-        .option('-a,--action <action>', 'action can be start or stop; default is start')
-        .description('Start microgateway using forever-monitor')
-        .action((options) => {
-            options.action = options.action || "start";
-            options.error = optionError(options);
-            if (options.file) {
-                foreverOptions = JSON.parse(fs.readFileSync(options.file, {
-                    encoding: 'utf8'
-                }));
-            }
-            if (options.action !== "start" && options.action !== "stop") {
-                return options.error('action must be start or stop');
-            }
-
-            /*  FOUND THIS WITHOUT ASSIGNMENT ?? What should it be doing?
-            foreverOptions ? foreverOptions : {
-                max: 3,
-                silent: false,
-                killTree: true,
-                minUptime: 2000
-            };
-            */
-
-            var child = new(forever.Monitor)(path.join(__dirname, '..', 'app.js'), foreverOptions);
-            if (options.action === "start") {
-                try {
-                    fs.appendFileSync(pidpath, process.pid + '|');
-                    child.start();
-                } catch (piderr) {
-                    writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},'failed to start microgateway: ' + piderr);
-                    process.exit(1);
-                }
-            } else {
-                try {
-                    var pids = fs.readFileSync(pidpath, 'utf8').split('|');
-                    if (pids) {
-                        pids.forEach(function(pid) {
-                            process.kill(parseInt(pid), 'SIGINT');
-                        });
-                        fs.unlinkSync(pidpath);
-                    } else {
-                        writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'pid file not found. please run this command from the folder where microgateway was started.')
-                    }
-                } catch (piderr) {
-                    writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},'failed to stop microgateway: ' + piderr);
-                    process.exit(1);
-                }
-            }
         });
 
     commander
@@ -396,13 +338,13 @@ const setup = function setup() {
                 }
                 options.configDir = options.configDir || process.env.EDGEMICRO_CONFIG_DIR;
                 keyGenerator.generate(options, (err) => {
-                    if ( err ) {
+                    if (err) {
                         process.exit(1)
                     } else {
                         process.exit(0)
                     }
                 });
-              } else {
+            } else {
                 //If there is no token then we can go through the password process
                 if (!options.username) {
                     return options.error('username is required');
@@ -418,14 +360,14 @@ const setup = function setup() {
                         return options.error('password is required');
                     }
                     keyGenerator.generate(options, (err) => {
-                        if ( err ) {
+                        if (err) {
                             process.exit(1)
                         } else {
                             process.exit(0)
                         }
                     });
                 })
-          }
+            }
         });
 
     commander
@@ -441,7 +383,7 @@ const setup = function setup() {
         .action((options) => {
             options.error = optionError(options);
             options.token = options.token || process.env.EDGEMICRO_SAML_TOKEN;
-            
+
             if (options.token) {
                 //If there is a token lets configure with standard opts.
                 if (!options.org) {
@@ -450,49 +392,49 @@ const setup = function setup() {
                 if (!options.env) {
                     return options.error('env is required');
                 }
-                if(!options.key){
+                if (!options.key) {
                     return options.error('key is required');
                 }
-                if(!options.secret){
+                if (!options.secret) {
                     return options.error('secret is required');
                 }
                 options.configDir = options.configDir || process.env.EDGEMICRO_CONFIG_DIR;
                 keyGenerator.revoke(options, (err) => {
-                    if ( err ) {
+                    if (err) {
                         process.exit(1)
                     } else {
                         process.exit(0)
                     }
                 });
-              }else{
-            if (!options.username) {
-                return options.error('username is required');
-            }
-            if (!options.org) {
-                return options.error('org is required');
-            }
-            if (!options.env) {
-                return options.error('env is required');
-            }
-            if (!options.key) {
-                return options.error('key is required');
-            }
-            if (!options.secret) {
-                return options.error('secret is required');
-            }
-            promptForPassword(options, (options) => {
-                if (!options.password) {
-                    return options.error('password is required');
+            } else {
+                if (!options.username) {
+                    return options.error('username is required');
                 }
-                keyGenerator.revoke(options, (err) => {
-                    if ( err ) {
-                        process.exit(1)
-                    } else {
-                        process.exit(0)
+                if (!options.org) {
+                    return options.error('org is required');
+                }
+                if (!options.env) {
+                    return options.error('env is required');
+                }
+                if (!options.key) {
+                    return options.error('key is required');
+                }
+                if (!options.secret) {
+                    return options.error('secret is required');
+                }
+                promptForPassword(options, (options) => {
+                    if (!options.password) {
+                        return options.error('password is required');
                     }
+                    keyGenerator.revoke(options, (err) => {
+                        if (err) {
+                            process.exit(1)
+                        } else {
+                            process.exit(0)
+                        }
+                    });
                 });
-            });
-        }
+            }
         });
 
     commander
@@ -544,7 +486,7 @@ const setup = function setup() {
                 return options.error('env is required');
             }
             if (options.token) {
-                upgradeauth.upgradeauth(options, () => {});
+                upgradeauth.upgradeauth(options, () => { });
             } else {
                 if (!options.username) {
                     return options.error('username is required');
@@ -553,7 +495,7 @@ const setup = function setup() {
                     if (!options.password) {
                         return options.error('password is required');
                     }
-                    upgradeauth.upgradeauth(options, () => {});
+                    upgradeauth.upgradeauth(options, () => { });
                 });
             }
         });
@@ -587,9 +529,9 @@ const setup = function setup() {
             if (options.rotatekeyuri && !options.rotatekeyuri.includes('http')) {
                 return options.error('rotatekeyuri requires a prototcol http or https')
             }
-            if (options.nbf && options.nbf !== 'undefined' && isNaN(options.nbf)){
+            if (options.nbf && options.nbf !== 'undefined' && isNaN(options.nbf)) {
                 return options.error('nbf value should be numeric');
-            }else if(options.nbf && options.nbf !== 'undefined' && options.nbf - Math.floor(options.nbf) !== 0){
+            } else if (options.nbf && options.nbf !== 'undefined' && options.nbf - Math.floor(options.nbf) !== 0) {
                 return options.error('nbf value should be numeric and whole number');
             }
             if (options.privatekey || options.cert) {
@@ -633,7 +575,7 @@ const setup = function setup() {
 
 
     var running = false;
-    commander.commands.forEach(function(command) {
+    commander.commands.forEach(function (command) {
         if (command._name === commander.rawArgs[2]) {
             running = true;
         }
@@ -644,12 +586,12 @@ const setup = function setup() {
 };
 
 function optionError(caller) {
-    return(((obj) => {
-      return((message) => {
-        writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},message);
-        obj.help();
-      });
-     })(caller))
+    return (((obj) => {
+        return ((message) => {
+            writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, message);
+            obj.help();
+        });
+    })(caller))
 }
 
 // prompt for a password if it is not specified
@@ -658,7 +600,7 @@ function promptForPassword(options, cb) {
     if (options.password) {
         cb(options);
     } else {
-        prompt.password("password:", function(pw) {
+        prompt.password("password:", function (pw) {
             options.password = pw;
             cb(options);
         });
@@ -671,7 +613,7 @@ function validateUrl(target) {
         url.parse(target, true);
         return true;
     } catch (err) {
-        writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},"Malformed URL: " + err);
+        writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, "Malformed URL: " + err);
         return false;
     }
 }
