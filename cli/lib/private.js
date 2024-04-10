@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const path = require('path');
-//const apigeetool = require('apigeetool');
 const util = require('util');
 const url = require('url');
 const request = require('postman-request');

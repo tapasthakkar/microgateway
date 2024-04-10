@@ -5,11 +5,6 @@ const edgeconfig = require('microgateway-config');
 const util = require('util');
 const configLocations = require('../../config/locations');
 const assert = require('assert')
-//const prompt = require('cli-prompt');
-//const path = require('path');
-//const apigeetool = require('apigeetool');
-//const _ = require('lodash');
-//const async = require('async');
 const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
 edgeconfig.setConsoleLogger(writeConsoleLog);
 
@@ -142,18 +137,3 @@ Cert.prototype.retrievePublicKeyPrivate = function(options) {
     writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP}, certificate);
   })
 }
-
-/*
-function optionError(message) {
-  writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},message);
-  this.help();
-}
-
-function printError(err) {
-  if (err.response) {
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},err.response.error);
-  } else {
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},err);
-  }
-}
-*/

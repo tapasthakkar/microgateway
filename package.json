@@ -8,7 +8,6 @@
     "edgemicro": "./cli/edgemicro"
   },
   "dependencies": {
-    "apigeetool": "^0.16.1",
     "async": "^2.6.4",
     "body-parser": "^1.19.0",
     "cli-prompt": "^0.5.0",
@@ -36,6 +35,7 @@
     "volos-cache-memory": "^0.10.1",
     "volos-spikearrest-common": "^0.10.4",
     "volos-spikearrest-memory": "^0.10.2",
+    "volos-util-apigee": "0.1.1",
     "xml2js": "^0.5.0"
   },
   "devDependencies": {

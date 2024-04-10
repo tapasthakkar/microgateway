@@ -1,10 +1,6 @@
 'use strict';
 
 const edgeconfig = require('microgateway-config')
-//const prompt = require('cli-prompt');
-//const path = require('path');
-//const apigeetool = require('apigeetool');
-//const _ = require('lodash');
 const async = require('async')
 const util = require('util')
 const fs = require('fs')

@@ -2,8 +2,7 @@
 const tmp = require('tmp');
 const cpr = require('cpr');
 const rimraf = require('rimraf');
-const apigeetool = require('apigeetool');
-//const request = require('postman-request');
+const apigeeUtils = require('volos-util-apigee');
 const assert = require('assert');
 const path = require('path');
 const async = require('async')
@@ -13,17 +12,13 @@ const xml2js = require("xml2js");
 const parseString = xml2js.parseString;
 
 const DEFAULT_HOSTS = 'default,secure';
-//const url = require('url');
 const debug = require('debug')('edgemicro-auth')
-//const _ = require('lodash')
 var exec = require('child_process').exec;
 const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway deploy auth';
 
 var run = function(cmd, cb) {
-    //writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'run %s',cmd)
-    // var child = 
     exec(cmd, {
         maxBuffer: 1024 * 500
     }, function(error /*, stdout, stderr */) {
@@ -64,7 +59,7 @@ Deployment.prototype.deployEdgeMicroInternalProxy = function deployEdgeMicroInte
         opts.password = options.password;
     }    
 
-    apigeetool.deployProxy(opts, function(err, res) {
+    apigeeUtils.deployProxy(opts, function(err, res) {
         if (err) {
             return callback(err);
         }
@@ -148,7 +143,7 @@ Deployment.prototype.checkDeployedInternalProxies = function checkDeployedIntern
         opts.password = options.password;
     }
    // const that = this;
-    apigeetool.listDeployments(opts, function(err /*, proxies */) {
+   apigeeUtils.listDeployments(opts, function(err /*, proxies */) {
         if (err) {
             if (err.message.includes("404")) {
                 return cb(null, options);
@@ -180,7 +175,7 @@ Deployment.prototype.checkDeployedProxies = function checkDeployedProxies(option
         opts.password = options.password;
     }
     //const that = this;
-    apigeetool.listDeployments(opts, function(err /*, proxies */) {
+    apigeeUtils.listDeployments(opts, function(err /*, proxies */) {
         if (err) {
             if (err.message.includes("404")) {
                 return cb(null, options);
@@ -332,7 +327,7 @@ Deployment.prototype.deployProxyWithPassword = function deployProxyWithPassword(
             setEdgeMicroInternalEndpoint(dir + "/apiproxy/policies/Authenticate-Call.xml", options.runtimeUrl);
         } 
         writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'Give me a minute or two... this can take a while...');
-        apigeetool.deployProxy(opts, function(err) {
+        apigeeUtils.deployProxy(opts, function(err) {
             if (err) {
                 if (err.code === 'ECONNRESET' && err.message === 'socket hang up') {
                     err.message = 'Deployment timeout. Please try again or use the --upload option.'
@@ -345,94 +340,6 @@ Deployment.prototype.deployProxyWithPassword = function deployProxyWithPassword(
                 writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'App %s deployed.', options.proxyName);
                 callback(null, options.runtimeUrl ? authUri + '/publicKey' : util.format(authUri + '/publicKey', options.org, options.env));
             }
-    
-            //writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'App %s added to your org. Now adding resources.', options.proxyName);
-            /*    opts.password = options.password; // override a apigeetool side-effect bug
-                installJavaCallout(managementUri, opts, function(err) {
-                    if (err) {
-                    return callback(err);
-                    }
-                    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'App %s deployed.', options.proxyName);
-                    callback(null, options.runtimeUrl ? authUri + '/publicKey' : util.format(authUri + '/publicKey', options.org, options.env));
-    
-                });*/
         });
     })
 }
-
-/*
-function installJavaCallout(managementUri, opts, cb) {
-
-    var jarName = 'micro-gateway-products-javacallout-1.0.0.jar';
-    // todo: revision?
-    var addResourceUri = '%s/v1/organizations/%s/apis/%s/revisions/1/resources?name=%s&type=java';
-    var uri = util.format(addResourceUri, managementUri, opts.organization, opts.api, jarName);
-
-    var httpReq = request({
-        uri: uri,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/octet-stream'
-        },
-        auth: {
-            username: opts.username,
-            password: opts.password
-        }
-    }, function(err, res) {
-        err = translateError(err, res);
-        if (err) {
-            return cb(err);
-        }
-
-        var addStepDefinitionUri = '%s/v1/organizations/%s/apis/%s/revisions/1/stepdefinitions';
-        uri = util.format(addStepDefinitionUri, managementUri, opts.organization, opts.api);
-        var data = '<JavaCallout name=\'JavaCallout\'><ResourceURL>java://%s</ResourceURL><ClassName>io.apigee.microgateway.javacallout.Callout</ClassName></JavaCallout>';
-
-        request({
-            uri: uri,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/xml'
-            },
-            auth: {
-                username: opts.username,
-                password: opts.password
-            },
-            body: util.format(data, jarName)
-        }, function(err) {
-            if (err) {
-                return cb(err);
-            }
-
-            var addStepUri = '%s/v1/organizations/%s/apis/%s/revisions/1/proxies/default/steps?name=JavaCallout&flow=PostFlow&enforcement=response';
-            uri = util.format(addStepUri, managementUri, opts.organization, opts.api);
-
-            request({
-                uri: uri,
-                method: 'POST',
-                auth: {
-                    username: opts.username,
-                    password: opts.password
-                }
-            }, function(err, res) {
-                cb(err, res)
-            });
-        });
-    });
-
-    var fileStream = fs.createReadStream(path.resolve(__dirname, jarName));
-    fileStream.pipe(httpReq);
-}
-
-
-function translateError(err, res) {
-    if (!err && res.statusCode >= 400) {
-
-        var msg = 'cannot ' + res.request.method + ' ' + url.format(res.request.uri) + ' (' + res.statusCode + ')';
-        err = new Error(msg);
-        err.text = res.body;
-        res.error = err;
-    }
-    return err;
-}
-*/
