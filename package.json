@@ -22,10 +22,10 @@
     "jsonwebtoken": "^9.0.1",
     "lodash": "^4.17.19",
     "log-symbols": "^1.0.2",
-    "microgateway-config": "^3.3.3",
-    "microgateway-core": "^3.3.3",
+    "microgateway-config": "apigee/microgateway-config#for-3.3.4",
+    "microgateway-core": "apigee/microgateway-core#for-3.3.4",
     "microgateway-edgeauth": "^3.2.2",
-    "microgateway-plugins": "^3.3.3",
+    "microgateway-plugins": "apigee/microgateway-plugins#for-3.3.4",
     "pem": "^1.8.1",
     "portastic": "^1.0.1",
     "postman-request": "^2.88.1-postman.33",
@@ -35,15 +35,12 @@
     "volos-cache-memory": "^0.10.1",
     "volos-spikearrest-common": "^0.10.4",
     "volos-spikearrest-memory": "^0.10.2",
-    "volos-util-apigee": "0.1.1",
+    "volos-util-apigee": "https://gitpkg.now.sh/apigee-127/volos/util/apigee?master",
     "xml2js": "^0.5.0"
   },
   "devDependencies": {
     "eslint": "^8.44.0",
     "eslint-config-google": "^0.13.0",
-    "gulp": "^4.0.2",
-    "gulp-shell": "^0.8.0",
-    "gulp-sourcemaps": "^1.5.2",
     "jshint-stylish": "^2.2.1",
     "minimist": "^1.2.6",
     "mocha": "^9.2.0",
@@ -59,7 +56,6 @@
     "start": "node app.js",
     "stop": "node stop.js",
     "lint": "eslint ./cli ./lib app.js",
-    "package": "node cli/package.js",
     "test": "mocha tests/*.*.integ.test.js --timeout 90000 && nyc mocha tests/*.*.unit.test.js"
   },
   "directories": {
