@@ -22,10 +22,10 @@
     "jsonwebtoken": "^9.0.1",
     "lodash": "^4.17.19",
     "log-symbols": "^1.0.2",
-    "microgateway-config": "^3.3.3",
-    "microgateway-core": "^3.3.3",
+    "microgateway-config": "apigee/microgateway-config#for-3.3.4",
+    "microgateway-core": "apigee/microgateway-core#for-3.3.4",
     "microgateway-edgeauth": "^3.2.2",
-    "microgateway-plugins": "^3.3.3",
+    "microgateway-plugins": "apigee/microgateway-plugins#for-3.3.4",
     "pem": "^1.8.1",
     "portastic": "^1.0.1",
     "postman-request": "^2.88.1-postman.33",
@@ -35,7 +35,7 @@
     "volos-cache-memory": "^0.10.1",
     "volos-spikearrest-common": "^0.10.4",
     "volos-spikearrest-memory": "^0.10.2",
-    "volos-util-apigee": "0.1.1",
+    "volos-util-apigee": "https://gitpkg.now.sh/apigee-127/volos/util/apigee?master",
     "xml2js": "^0.5.0"
   },
   "devDependencies": {
