@@ -13,8 +13,8 @@ project_id=$2
 
 if [ $# -eq 2 ]; then
 
-  sed -i .bak  "s/ *edgemicro.*/ edgemicro@$version/g" installnode.sh
-  docker build -t edgemicro:$version $DIR
+  sed -i.bak  "s/ *edgemicro.*/ edgemicro@$version/g" installnode.sh
+  docker build --no-cache -t edgemicro:$version $DIR
   docker tag edgemicro:$version gcr.io/$project_id/edgemicro:$version
   docker tag edgemicro:$version gcr.io/$project_id/edgemicro:latest
   docker push gcr.io/$project_id/edgemicro:$version
