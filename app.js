@@ -6,7 +6,7 @@ var fs = require('fs');
 var run = require('./cli/lib/gateway')();
 var portastic = require('portastic');
 const os = require('os');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('./core').Logging.writeConsoleLog;
 const options = {};
 const CONSOLE_LOG_TAG_COMP = 'microgateway app';
 

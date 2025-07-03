@@ -10,7 +10,7 @@ const async = require('async');
 const debug = require('debug')('cert')
 //const yaml = require('js-yaml');
 //const prompt = require('cli-prompt');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../../core').Logging.writeConsoleLog;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway cert lib';
 

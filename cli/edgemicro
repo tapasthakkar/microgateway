@@ -23,7 +23,7 @@
 'use strict';
 
 const { version: edgemicroVersion, engines } = require('../package.json');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../core').Logging.writeConsoleLog;
 const semver = require('semver');
 
 const nodeVersion = process.version;

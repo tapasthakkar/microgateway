@@ -16,7 +16,7 @@ const keyGenerator = require('./lib/key-gen')();
 const prompt = require('cli-prompt');
 const init = require('./lib/init');
 var portastic = require('portastic');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../core').Logging.writeConsoleLog;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway cmd';
 

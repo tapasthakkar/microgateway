@@ -7,7 +7,7 @@ const path = require('path');
 const debug = require("debug")("jwkrotatekey");
 //const commander = require('commander');
 const request = require('postman-request');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../../core').Logging.writeConsoleLog;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway rotate key';
 
