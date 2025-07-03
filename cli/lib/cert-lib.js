@@ -10,7 +10,7 @@ const async = require('async');
 const debug = require('debug')('cert')
 //const yaml = require('js-yaml');
 //const prompt = require('cli-prompt');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../../core').Logging.writeConsoleLog;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway cert lib';
 
@@ -19,7 +19,7 @@ const ERR_STORE_MISSING = 'com.apigee.secure-store.securestore_does_not_exist';
 //const ERR_STORE_ITEM_MISSING = 'com.apigee.secure-store.storeitem_does_not_exist';
 
 
-const CertLogic = function(config) {
+const CertLogic = function (config) {
     this.managementUri = config.edge_config['managementUri'];
     this.vaultName = config.edge_config['vaultName'];
     this.baseUri = config.edge_config['baseUri'];
@@ -28,13 +28,13 @@ const CertLogic = function(config) {
     this.keySecretMessage = config.edge_config['keySecretMessage'];
 };
 
-module.exports = function(config) {
+module.exports = function (config) {
     return new CertLogic(config)
 };
 
-CertLogic.prototype.retrievePublicKey = function(options, callback) {
+CertLogic.prototype.retrievePublicKey = function (options, callback) {
 
-    getPublicKey(options.org, options.env, this.authUri, function(err, certificate) {
+    getPublicKey(options.org, options.env, this.authUri, function (err, certificate) {
         if (err) {
             return callback(err);
         }
@@ -42,10 +42,10 @@ CertLogic.prototype.retrievePublicKey = function(options, callback) {
     });
 }
 
-CertLogic.prototype.retrievePublicKeyPrivate = function(callback) {
+CertLogic.prototype.retrievePublicKeyPrivate = function (callback) {
 
     const authUri = this.authUri;
-    getPublicKeyPrivate(authUri, function(err, certificate) {
+    getPublicKeyPrivate(authUri, function (err, certificate) {
         if (err) {
             return callback(err);
         }
@@ -53,13 +53,13 @@ CertLogic.prototype.retrievePublicKeyPrivate = function(callback) {
     });
 }
 
-CertLogic.prototype.checkCertWithPassword = function(options, callback) {
+CertLogic.prototype.checkCertWithPassword = function (options, callback) {
     var uri = util.format('%s/v1/organizations/%s/environments/%s/keyvaluemaps/%s',
         this.managementUri, options.org, options.env, this.vaultName);
     request({
         uri: uri,
         auth: generateCredentialsObject(options)
-    }, function(err, res, body) {
+    }, function (err, res, body) {
         err = translateError(err, res);
         if (err) {
             return callback(err);
@@ -68,7 +68,7 @@ CertLogic.prototype.checkCertWithPassword = function(options, callback) {
     });
 }
 
-CertLogic.prototype.checkPrivateCert = function(options, callback) {
+CertLogic.prototype.checkPrivateCert = function (options, callback) {
 
     var uri = util.format('%s/v1/organizations/%s/environments/%s/keyvaluemaps/%s/entries/private_key',
         this.managementUri, options.org, options.env, this.vaultName);
@@ -76,7 +76,7 @@ CertLogic.prototype.checkPrivateCert = function(options, callback) {
     request({
         uri: uri,
         auth: generateCredentialsObject(options)
-    }, function(err, res) {
+    }, function (err, res) {
         err = translateError(err, res);
         if (err) {
             return callback(err);
@@ -88,15 +88,15 @@ CertLogic.prototype.checkPrivateCert = function(options, callback) {
 
 }
 
-CertLogic.prototype.installPrivateCert = function(options, callback) {
+CertLogic.prototype.installPrivateCert = function (options, callback) {
     const managementUri = this.managementUri;
     const vaultName = this.vaultName;
-    createCert(function(err, keys) {
+    createCert(function (err, keys) {
         if (err) {
             if (callback) {
                 return callback(err);
             } else {
-                return writeConsoleLog('log', {component: CONSOLE_LOG_TAG_COMP},err, err.stack);
+                return writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, err, err.stack);
             }
         }
 
@@ -104,44 +104,44 @@ CertLogic.prototype.installPrivateCert = function(options, callback) {
         const publicKey = keys.certificate;
         const async = require('async');
 
-        pem.getPublicKey(publicKey, function(err, key) {
+        pem.getPublicKey(publicKey, function (err, key) {
             async.series(
                 [
-                    function(cb) {
+                    function (cb) {
                         if (!options.force) {
                             return cb();
                         }
                         deleteVault(generateCredentialsObject(options), managementUri, options.org, options.env, vaultName, cb);
                     },
-                    function(cb) {
-                        writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'creating KVM');
-                        writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'adding private_key');
-                        writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'adding public_key');
+                    function (cb) {
+                        writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'creating KVM');
+                        writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'adding private_key');
+                        writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'adding public_key');
                         var entries = [{
-                                'name': 'private_key',
-                                'value': privateKey
-                            },
-                            {
-                                'name': 'public_key',
-                                'value': publicKey
-                            },
-                            {
-                                'name': 'public_key1',
-                                'value': key.publicKey
-                            },
-                            {
-                                'name': 'private_key_kid',
-                                'value': '1'
-                            },
-                            {
-                                'name': 'public_key1_kid',
-                                'value': '1'
-                            }
+                            'name': 'private_key',
+                            'value': privateKey
+                        },
+                        {
+                            'name': 'public_key',
+                            'value': publicKey
+                        },
+                        {
+                            'name': 'public_key1',
+                            'value': key.publicKey
+                        },
+                        {
+                            'name': 'private_key_kid',
+                            'value': '1'
+                        },
+                        {
+                            'name': 'public_key1_kid',
+                            'value': '1'
+                        }
                         ]
                         createVault(generateCredentialsObject(options), managementUri, options.org, options.env, vaultName, entries, cb);
                     }
                 ],
-                function(err) {
+                function (err) {
                     if (err) {
                         callback(err);
                     } else {
@@ -153,7 +153,7 @@ CertLogic.prototype.installPrivateCert = function(options, callback) {
     });
 }
 
-CertLogic.prototype.installCertWithPassword = function(options, callback) {
+CertLogic.prototype.installCertWithPassword = function (options, callback) {
     const managementUri = this.managementUri;
     const vaultName = this.vaultName;
     var privateKey;
@@ -164,7 +164,7 @@ CertLogic.prototype.installCertWithPassword = function(options, callback) {
         publicKey = fs.readFileSync(path.resolve(options.cert), 'utf8');
         uploadCert(options, managementUri, vaultName, privateKey, publicKey, callback);
     } else {
-        createCert(function(err, keys) {
+        createCert(function (err, keys) {
             if (err) {
                 return callback(err);
             }
@@ -187,7 +187,7 @@ CertLogic.prototype.generateKeysWithPassword = function generateKeysWithPassword
         var byteLength = 256;
         var hash = crypto.createHash('sha256');
         hash.update(Date.now().toString());
-        crypto.randomBytes(byteLength, function(err, buf) {
+        crypto.randomBytes(byteLength, function (err, buf) {
             if (err) {
                 return cb(err);
             }
@@ -199,13 +199,13 @@ CertLogic.prototype.generateKeysWithPassword = function generateKeysWithPassword
     }
 
     async.series([
-        function(callback) {
+        function (callback) {
             genkey(callback);
         }, // generate the key
-        function(callback) {
+        function (callback) {
             genkey(callback);
         } // generate the secret
-    ], function(err, results) {
+    ], function (err, results) {
         var key = results[0];
         var secret = results[1];
         var keys = {
@@ -221,7 +221,7 @@ CertLogic.prototype.generateKeysWithPassword = function generateKeysWithPassword
             method: 'POST',
             auth: generateCredentialsObject(options),
             json: keys
-        }, function(err, res) {
+        }, function (err, res) {
             err = translateError(err, res);
             if (err) {
                 return cb(err);
@@ -239,7 +239,7 @@ CertLogic.prototype.generateKeysWithPassword = function generateKeysWithPassword
                         password: secret
                     },
                     json: true
-                }, function(err, res) {
+                }, function (err, res) {
                     err = translateError(err, res);
                     if (err) {
                         return cb(err);
@@ -248,15 +248,15 @@ CertLogic.prototype.generateKeysWithPassword = function generateKeysWithPassword
                     if (res.statusCode >= 200 && res.statusCode <= 202) {
                         if (!res.body.region || !res.body.host) {
                             if (cb) {
-                                cb(writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},'invalid response from region api', regionUrl, res.text));
+                                cb(writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, 'invalid response from region api', regionUrl, res.text));
                             } else {
-                                writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},'invalid response from region api', regionUrl, res.text);
+                                writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, 'invalid response from region api', regionUrl, res.text);
                             }
 
                             return;
                         }
 
-                        writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'configuring host', res.body.host, 'for region', res.body.region);
+                        writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'configuring host', res.body.host, 'for region', res.body.region);
                         var bootstrapUrl = util.format(managementUri, 'bootstrap', options.org, options.env);
                         var parsedUrl = url.parse(bootstrapUrl);
                         parsedUrl.host = res.body.host; // update to regional host
@@ -270,11 +270,11 @@ CertLogic.prototype.generateKeysWithPassword = function generateKeysWithPassword
 
 
                     } else {
-                        cb(writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},'error retrieving region for org', res.statusCode, res.text));
+                        cb(writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, 'error retrieving region for org', res.statusCode, res.text));
                     }
                 });
             } else {
-                cb(writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},'error uploading credentials', res.statusCode, res.text));
+                cb(writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, 'error uploading credentials', res.statusCode, res.text));
             }
         });
     });
@@ -285,7 +285,7 @@ CertLogic.prototype.deleteCertWithPassword = function deleteCertWithPassword(opt
     const managementUri = this.managementUri;
     const vaultName = this.vaultName;
 
-    deleteVault(generateCredentialsObject(options), managementUri, options.org, options.env, vaultName, function(err) {
+    deleteVault(generateCredentialsObject(options), managementUri, options.org, options.env, vaultName, function (err) {
         if (err) {
             cb(err);
         } else {
@@ -314,7 +314,7 @@ function createCert(cb) {
 }
 
 function deleteVault(credentials, managementUri, organization, environment, vaultName, cb) {
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'deleting KVM');
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'deleting KVM');
 
     var uri = util.format('%s/v1/organizations/%s/environments/%s/keyvaluemaps/%s', managementUri, organization, environment, vaultName);
 
@@ -322,7 +322,7 @@ function deleteVault(credentials, managementUri, organization, environment, vaul
         uri: uri,
         method: 'DELETE',
         auth: credentials
-    }, function(err, res) {
+    }, function (err, res) {
         err = translateError(err, res);
         if (isApigeeError(err, ERR_STORE_MISSING)) {
             err = undefined;
@@ -348,7 +348,7 @@ function createVault(credentials, managementUri, organization, environment, vaul
         method: 'POST',
         auth: credentials,
         json: storageOpts
-    }, function(err, res) {
+    }, function (err, res) {
         err = translateError(err, res);
         if (isApigeeError(err, ERR_STORE_EXISTS)) {
             err = new Error('Store already exists. Use --force to replace keys.');
@@ -382,7 +382,7 @@ function getPublicKey(organization, environment, authUri, cb) {
     const uri = authUri + '/publicKey';
     request({
         uri: uri,
-    }, function(err, res) {
+    }, function (err, res) {
         err = translateError(err, res);
         if (err) {
             return cb(err);
@@ -396,7 +396,7 @@ function getPublicKeyPrivate(authUri, cb) {
 
     request({
         uri: runtimeUri,
-    }, function(err, res) {
+    }, function (err, res) {
         err = translateError(err, res);
         if (err) {
             return cb(err);
@@ -421,44 +421,44 @@ function generateCredentialsObject(options) {
 function uploadCert(options, managementUri, vaultName, privateKey, publicKey, callback) {
     const async = require('async');
 
-    pem.getPublicKey(publicKey, function(err, key) {
+    pem.getPublicKey(publicKey, function (err, key) {
         async.series(
             [
-                function(cb) {
+                function (cb) {
                     if (!options.force) {
                         return cb();
                     }
                     deleteVault(generateCredentialsObject(options), managementUri, options.org, options.env, vaultName, cb);
                 },
-                function(cb) {
-                    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'creating KVM');
-                    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'adding private_key');
-                    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},'adding public_key');
+                function (cb) {
+                    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'creating KVM');
+                    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'adding private_key');
+                    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'adding public_key');
                     var entries = [{
-                            'name': 'private_key',
-                            'value': privateKey
-                        },
-                        {
-                            'name': 'public_key',
-                            'value': publicKey
-                        },
-                        {
-                            'name': 'public_key1',
-                            'value': key.publicKey
-                        },
-                        {
-                            'name': 'private_key_kid',
-                            'value': '1'
-                        },
-                        {
-                            'name': 'public_key1_kid',
-                            'value': '1'
-                        }
+                        'name': 'private_key',
+                        'value': privateKey
+                    },
+                    {
+                        'name': 'public_key',
+                        'value': publicKey
+                    },
+                    {
+                        'name': 'public_key1',
+                        'value': key.publicKey
+                    },
+                    {
+                        'name': 'private_key_kid',
+                        'value': '1'
+                    },
+                    {
+                        'name': 'public_key1_kid',
+                        'value': '1'
+                    }
                     ]
                     createVault(generateCredentialsObject(options), managementUri, options.org, options.env, vaultName, entries, cb);
                 }
             ],
-            function(err) {
+            function (err) {
                 if (err) {
                     callback(err);
                 } else {

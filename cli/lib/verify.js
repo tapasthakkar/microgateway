@@ -1,10 +1,10 @@
 'use strict';
-const edgeconfig = require('microgateway-config');
+const edgeconfig = require('../../config');
 //const path = require('path');
 const request = require('postman-request');
 const async = require('async');
 //const assert = require('assert');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../../core').Logging.writeConsoleLog;
 edgeconfig.setConsoleLogger(writeConsoleLog);
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway verify';
