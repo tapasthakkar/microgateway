@@ -7,7 +7,7 @@ var deployAuthLib = require('./deploy-auth');
 var deployAuth;
 
 const path = require('path');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../../core').Logging.writeConsoleLog;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway upgrade edgeauth';
 
