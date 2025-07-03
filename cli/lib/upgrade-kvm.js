@@ -4,7 +4,7 @@ const pem = require("pem");
 const util = require("util");
 const debug = require("debug")("upgradekvm");
 const request = require('postman-request');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../../core').Logging.writeConsoleLog;
 const CONSOLE_LOG_TAG_COMP = 'microgateway upgrade kvm';
 
 function generateCredentialsObject(options) {

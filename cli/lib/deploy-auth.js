@@ -14,7 +14,7 @@ const parseString = xml2js.parseString;
 const DEFAULT_HOSTS = 'default,secure';
 const debug = require('debug')('edgemicro-auth')
 var exec = require('child_process').exec;
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../../core').Logging.writeConsoleLog;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway deploy auth';
 

@@ -1,17 +1,17 @@
 'use strict';
 
-const edgeconfig = require('microgateway-config')
+const edgeconfig = require('../../config')
 const async = require('async')
 const util = require('util')
 const fs = require('fs')
 const assert = require('assert');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../../core').Logging.writeConsoleLog;
 edgeconfig.setConsoleLogger(writeConsoleLog);
 const configLocations = require('../../config/locations');
-const BUFFERSIZE    = 10000;
-const BATCHSIZE     = 500;
+const BUFFERSIZE = 10000;
+const BATCHSIZE = 500;
 const FLUSHINTERVAL = 5000;
-var defaultConfig ;
+var defaultConfig;
 const CONSOLE_LOG_TAG_COMP = 'microgateway configure';
 
 
@@ -32,7 +32,7 @@ module.exports = function () {
 
 Configure.prototype.configure = function configure(options, cb) {
   if (!fs.existsSync(configLocations.getDefaultPath(options.configDir))) {
-    writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP},"Missing %s, Please run 'edgemicro init'",configLocations.getDefaultPath())
+    writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, "Missing %s, Please run 'edgemicro init'", configLocations.getDefaultPath())
     return cb("Please call edgemicro init first")
   }
 
@@ -42,14 +42,14 @@ Configure.prototype.configure = function configure(options, cb) {
   managementUri = defaultConfig.edge_config.managementUri;
   keySecretMessage = defaultConfig.edge_config.keySecretMessage;
 
-  if(!options.token) {
+  if (!options.token) {
     assert(options.username, 'username is required');
     assert(options.password, 'password is required');
   }
   assert(options.org, 'org is required');
   assert(options.env, 'env is required');
 
-  if(!options.proxyName) {
+  if (!options.proxyName) {
     options.proxyName = 'edgemicro-auth';
   }
 
@@ -91,16 +91,16 @@ Configure.prototype.configure = function configure(options, cb) {
     options.deployed = false;
     deployAuth.checkDeployedProxies(options, (err, options) => {
       if (err) {
-        writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP}, err);
-        if ( cb ) { cb(err) } else process.exit(1);
+        writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, err);
+        if (cb) { cb(err) } else process.exit(1);
         return;
       }
       configureEdgemicroWithCreds(options, (err) => {
         if (err) {
-          writeConsoleLog('error',{component: CONSOLE_LOG_TAG_COMP}, err);
-          if ( cb ) { cb(err) } else process.exit(1);
+          writeConsoleLog('error', { component: CONSOLE_LOG_TAG_COMP }, err);
+          if (cb) { cb(err) } else process.exit(1);
         }
-        if ( cb ) { cb(err) } else process.exit(0);
+        if (cb) { cb(err) } else process.exit(0);
       });
     })
   });
@@ -121,13 +121,13 @@ function configureEdgemicroWithCreds(options, cb) {
   tasks.push(
     function (callback) {
       setTimeout(() => {
-	writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP}, 'checking org for existing KVM');
+        writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'checking org for existing KVM');
         cert.checkCertWithPassword(options, function (err/*, certs */) {
           if (err) {
-            writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP}, 'error checking for cert. Installing new cert.');
+            writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'error checking for cert. Installing new cert.');
             cert.installCertWithPassword(options, callback);
           } else {
-            writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP}, 'KVM already exists in your org');
+            writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'KVM already exists in your org');
             cert.retrievePublicKey(options, callback);
           }
         });
@@ -158,7 +158,7 @@ function configureEdgemicroWithCreds(options, cb) {
     addEnvVars(agentConfig);
 
     if (options.deployed === false) {
-      agentConfig['edge_config']['jwt_public_key'] = (options.url ? options.url+"/edgemicro-auth/publicKey" : results[0]); // get deploy results
+      agentConfig['edge_config']['jwt_public_key'] = (options.url ? options.url + "/edgemicro-auth/publicKey" : results[0]); // get deploy results
       agentConfig['edge_config'].bootstrap = results[2].bootstrap; // get genkeys results
     } else {
       agentConfig['edge_config']['jwt_public_key'] = authUri + '/publicKey';
@@ -182,35 +182,35 @@ function configureEdgemicroWithCreds(options, cb) {
       }
 
       agentConfig['analytics']['uri'] = bootstrapUri.replace('bootstrap', 'axpublisher');
-      agentConfig['analytics']['bufferSize']    = BUFFERSIZE;
-      agentConfig['analytics']['batchSize']     = BATCHSIZE;
+      agentConfig['analytics']['bufferSize'] = BUFFERSIZE;
+      agentConfig['analytics']['batchSize'] = BATCHSIZE;
       agentConfig['analytics']['flushInterval'] = FLUSHINTERVAL;
     }
 
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP});
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP}, 'saving configuration information to:', agentConfigPath);
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP });
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'saving configuration information to:', agentConfigPath);
     edgeconfig.save(agentConfig, agentConfigPath); // if it didn't throw, save succeeded
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP});
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP });
 
     if (options.deployed === true) {
-      writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP}, 'vault info:\n', results[0]);
+      writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'vault info:\n', results[0]);
     } else {
-      writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP}, 'vault info:\n', results[1]);
+      writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'vault info:\n', results[1]);
     }
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP});
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP });
 
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP},keySecretMessage);
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, keySecretMessage);
     const key = results[2] ? results[2].key : results[1].key;
     const secret = results[2] ? results[2].secret : results[1].secret;
     assert(key, 'must have a key');
     assert(secret, 'must have a secret');
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP}, '  key:', key);
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP}, '  secret:', secret);
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP});
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, '  key:', key);
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, '  secret:', secret);
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP });
     process.env.EDGEMICRO_KEY = key;
     process.env.EDGEMICRO_SECRET = secret;
 
-    writeConsoleLog('log',{component: CONSOLE_LOG_TAG_COMP}, 'edgemicro configuration complete!');
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'edgemicro configuration complete!');
     setTimeout(cb, 50)
   });
 }

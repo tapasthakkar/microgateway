@@ -13,10 +13,10 @@ const parser = new(require('xml2js')).Parser();
 const builder = new(require('xml2js')).Builder();
 const assert = require('assert');
 const cert = require('./cert-lib');
-const edgeconfig = require('microgateway-config');
+const edgeconfig = require('../../config');
 const configLocations = require('../../config/locations');
 const deploymentFx = require('./deploy-auth');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../../core').Logging.writeConsoleLog;
 edgeconfig.setConsoleLogger(writeConsoleLog);
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway private';

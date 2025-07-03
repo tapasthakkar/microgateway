@@ -5,12 +5,12 @@ const request = require('postman-request');
 const util = require('util');
 const fs = require('fs');
 const path = require('path');
-const edgeconfig = require('microgateway-config');
+const edgeconfig = require('../../config');
 const jwt = require('jsonwebtoken');
 const assert = require('assert')
 
 const configLocations = require('../../config/locations');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../../core').Logging.writeConsoleLog;
 edgeconfig.setConsoleLogger(writeConsoleLog);
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway token';

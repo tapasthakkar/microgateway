@@ -22,7 +22,7 @@
 
 'use strict';
 var edgemicroVersion = require('../package.json').version;
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../core').Logging.writeConsoleLog;
 const version = process.version;
 const ltsVersion = 18;
 const experimental = ["v19", "v21"];

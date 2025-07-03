@@ -19,7 +19,7 @@ const token = require('../cli/lib/token')();
 
 
 const envVars = require('./env')
-const edgeConfig = require('microgateway-config');
+const edgeConfig = require('../config');
 
 
 const jwt = require('jsonwebtoken');

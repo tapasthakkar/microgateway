@@ -2,7 +2,7 @@
 const fs = require('fs')
 const path = require('path');
 const configLocations = require('../../config/locations');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../../core').Logging.writeConsoleLog;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway init';
 

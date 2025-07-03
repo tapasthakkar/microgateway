@@ -3,7 +3,7 @@
 const cluster = require('cluster');
 const agentConfig = require('../../lib/agent-config');
 const assert = require('assert');
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../../core').Logging.writeConsoleLog;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway start agent';
 

@@ -2,7 +2,7 @@
 
 const commander = require('commander');
 const token = require('./lib/token')();
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const writeConsoleLog = require('../core').Logging.writeConsoleLog;
 
 const CONSOLE_LOG_TAG_COMP = 'microgateway cmd token';
 
