@@ -87,7 +87,7 @@
   ],
   "author": "Kevin Swiber <kswiber@gmail.com>",
   "engines": {
-    "node": "^18 || ^20 || ^22",
+    "node": "^20 || ^22 || ^24",
     "npm": ">=8.19.3"
   },
   "cpu": [
