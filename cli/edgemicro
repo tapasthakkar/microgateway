@@ -21,39 +21,49 @@
  ****************************************************************************/
 
 'use strict';
-var edgemicroVersion = require('../package.json').version;
-const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
-const version = process.version;
-const ltsVersion = 18;
-const experimental = ["v19", "v21"];
-const latest = 22;
 
+const { version: edgemicroVersion, engines } = require('../package.json');
+const writeConsoleLog = require('microgateway-core').Logging.writeConsoleLog;
+const semver = require('semver');
+
+const nodeVersion = process.version;
+const majorVersion = parseInt(nodeVersion.slice(1).split('.')[0], 10);
 const CONSOLE_LOG_TAG_COMP = 'microgateway edgemicro';
 
 // Add the --no-deprecation flag to NODE_OPTIONS
 process.env.NODE_OPTIONS = (process.env.NODE_OPTIONS || '') + ' --no-deprecation';
 
-//don't print versions when obtaining a token. 
-if (!process.argv.includes("token") && !process.argv.includes("get")) {
-    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'current nodejs version is %s', version);
+// Don't print versions when obtaining a token.
+if (!process.argv.includes('token') && !process.argv.includes('get')) {
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'current nodejs version is %s', nodeVersion);
     writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'current edgemicro version is %s', edgemicroVersion);
 }
 
-for (var ver in experimental) {
-    if (version.includes(experimental[ver])) {
-        writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, "You are using a version of NodeJS that is not supported");
-        return;
-    }
-}
-var majorVersion = parseInt(version.split(".")[0].replace("v", ""));
-
-if (majorVersion == 18) {
-    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, '\x1b[33m%s\x1b[0m', `Current Node.js version is ${version}. Note, v18.x.x will be out of support soon, see https://docs.apigee.com/release/notes/edge-microgateway-release-notes-0`);
+// Warn if using odd-numbered Node (non-LTS, short-lived)
+if (majorVersion % 2 !== 0) {
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'You are using a version of NodeJS that is not supported');
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'Supported Node.js versions : %s', engines.node);
+    process.exit(1);
 }
 
-if (majorVersion < ltsVersion || majorVersion > latest) {
-    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, "You are using a version of NodeJS that is not supported");
-    return;
-} else {
-    require('./cmd')()
+// Warn if running on an LTS version that’s near end-of-support
+// (Here we check if the lowest allowed version is the current major)
+const minSupportedMajor = semver.minVersion(engines.node)?.major;
+if (majorVersion === minSupportedMajor) {
+    writeConsoleLog(
+        'log',
+        { component: CONSOLE_LOG_TAG_COMP },
+        '\x1b[33m%s\x1b[0m',
+        `Current Node.js version is ${nodeVersion}. Note, v${majorVersion}.x.x will be out of support soon, see https://docs.apigee.com/release/notes/edge-microgateway-release-notes-0`
+    );
 }
+
+// Runtime enforcement of package.json engines.node
+if (!semver.satisfies(nodeVersion, engines.node, { includePrerelease: true })) {
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'You are using a version of NodeJS that is not supported');
+    writeConsoleLog('log', { component: CONSOLE_LOG_TAG_COMP }, 'Supported Node.js versions : %s', engines.node);
+    process.exit(1);
+}
+
+// Load and run the CLI command handler
+require('./cmd')();
