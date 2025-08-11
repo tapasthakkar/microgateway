@@ -32,7 +32,7 @@ function installEMG() {
         logInfo "EMG being run from local repository"
     fi
   else
-    npm install -g edgemicro > installEMG.txt 2>&1
+    sudo npm install -g edgemicro > installEMG.txt 2>&1
     result=$?
     logInfo "Install EMG with status $status"
     if [ -z "$usingLocalRepository" ]; then
@@ -96,7 +96,7 @@ configureEMG() {
 
   logInfo "Configure EMG"
 
-  $EDGEMICRO configure -o $MOCHA_ORG -e $MOCHA_ENV -u $MOCHA_USER -p $MOCHA_PASSWORD > edgemicro.configure.txt
+  $EDGEMICRO configure -o $MOCHA_ORG -e $MOCHA_ENV -u $MOCHA_USER -t $MOCHA_BEARER_TOKEN > edgemicro.configure.txt
   result=$?
 
   if [ $result -eq 0 ]; then
@@ -575,7 +575,7 @@ uninstallEMG() {
 
   logInfo "Uninstall EMG"
 
-  npm uninstall -g edgemicro > uninstallEMG.txt 2>&1
+  sudo npm uninstall -g edgemicro > uninstallEMG.txt 2>&1
   result=$? 
   if [ $result -ne 0 ]; then
        logError "Failed to uninstall EMG with status $result"
