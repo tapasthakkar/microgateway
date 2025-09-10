@@ -32,7 +32,9 @@
         "microgateway-plugins": "^3.3.7",
         "pem": "^1.8.1",
         "portastic": "^1.0.1",
-        "postman-request": "^2.88.1-postman.40",
+        "postman-request": "^2.88.1-postman.43",
+        "redis": "^3.1.2",
+        "resolve": "^1.20.0",
         "rimraf": "^6.0.1",
         "tmp": "0.2.3",
         "uuid": "^11.0.3",
@@ -35564,9 +35566,10 @@
       "license": "MIT"
     },
     "node_modules/tmp": {
-      "version": "0.2.3",
-      "resolved": "https://registry.npmjs.org/tmp/-/tmp-0.2.3.tgz",
-      "integrity": "sha512-nZD7m9iCPC5g0pYmcaxogYKggSfLsdxl8of3Q/oIbqCqLLIO9IAF0GWjX1z9NZRHPiXv8Wex4yDCaZsgEw0Y8w==",
+      "version": "0.2.5",
+      "resolved": "https://registry.npmjs.org/tmp/-/tmp-0.2.5.tgz",
+      "integrity": "sha512-voyz6MApa1rQGUxT3E+BK7/ROe8itEx7vD8/HEvt4xwXucvQ5G5oeEiHkmHZJuBO21RpOf+YYm9MOivj709jow==",
+      "dev": true,
       "license": "MIT",
       "engines": {
         "node": ">=14.14"
