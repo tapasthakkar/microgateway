@@ -27,6 +27,7 @@ EMG_CONFIG_FILE="$HOME/.edgemicro/$MOCHA_ORG-$MOCHA_ENV-config.yaml"
 
 PRODUCT_NAME="edgemicro_product_nightly"
 PROXY_NAME="edgemicro_proxy_nightly"
+PROXY_NAME_QUOTA="edgemicro_proxy_nightly_quota"
 DEVELOPER_NAME="edgemicro_dev_nightly"
 DEVELOPER_APP_NAME="edgemicro_dev_app_nightly"
 
@@ -117,8 +118,34 @@ main() {
 
   echo
   testCount=`expr $testCount + 1`
+  echo "$testCount) createAPIProxy Quota"
+  createAPIProxy ${PROXY_NAME_QUOTA}; ret=$?
+  if [ $ret -eq 0 ]; then
+       echo "$STATUS_PASS_STR"
+       testPassCount=`expr $testPassCount + 1`
+  else
+       echo "$STATUS_FAIL_STR"
+       result=1
+       testFailCount=`expr $testFailCount + 1`
+  fi
+
+  echo
+  testCount=`expr $testCount + 1`
   echo "$testCount) createAPIProxyBundle"
   createAPIProxyBundle ${PROXY_NAME}; ret=$?
+  if [ $ret -eq 0 ]; then
+       echo "$STATUS_PASS_STR"
+       testPassCount=`expr $testPassCount + 1`
+  else
+       echo "$STATUS_FAIL_STR"
+       result=1
+       testFailCount=`expr $testFailCount + 1`
+  fi
+
+  echo
+  testCount=`expr $testCount + 1`
+  echo "$testCount) createAPIProxyBundle Quota"
+  createAPIProxyBundle ${PROXY_NAME_QUOTA}; ret=$?
   if [ $ret -eq 0 ]; then
        echo "$STATUS_PASS_STR"
        testPassCount=`expr $testPassCount + 1`
@@ -143,8 +170,34 @@ main() {
 
   echo
   testCount=`expr $testCount + 1`
+  echo "$testCount) updateAPIProxy Quota"
+  updateAPIProxy ${PROXY_NAME_QUOTA} ${PROXY_NAME_QUOTA}.zip ${proxyBundleVersion}; ret=$?
+  if [ $ret -eq 0 ]; then
+       echo "$STATUS_PASS_STR"
+       testPassCount=`expr $testPassCount + 1`
+  else
+       echo "$STATUS_FAIL_STR"
+       result=1
+       testFailCount=`expr $testFailCount + 1`
+  fi
+
+  echo
+  testCount=`expr $testCount + 1`
   echo "$testCount) deployAPIProxy"
   deployAPIProxy ${PROXY_NAME} ${MOCHA_ENV} ${proxyBundleVersion}; ret=$?
+  if [ $ret -eq 0 ]; then
+       echo "$STATUS_PASS_STR"
+       testPassCount=`expr $testPassCount + 1`
+  else
+       echo "$STATUS_FAIL_STR"
+       result=1
+       testFailCount=`expr $testFailCount + 1`
+  fi
+
+  echo
+  testCount=`expr $testCount + 1`
+  echo "$testCount) deployAPIProxy Quota"
+  deployAPIProxy ${PROXY_NAME_QUOTA} ${MOCHA_ENV} ${proxyBundleVersion}; ret=$?
   if [ $ret -eq 0 ]; then
        echo "$STATUS_PASS_STR"
        testPassCount=`expr $testPassCount + 1`
@@ -170,7 +223,7 @@ main() {
   echo
   testCount=`expr $testCount + 1`
   echo "$testCount) createAPIProduct"
-  createAPIProduct ${PRODUCT_NAME} ${PROXY_NAME}; ret=$?
+  createAPIProduct ${PRODUCT_NAME} ${PROXY_NAME} ${PROXY_NAME_QUOTA}; ret=$?
   rm -f ${PRODUCT_NAME}.json
   if [ $ret -eq 0 ]; then
        echo "$STATUS_PASS_STR"
@@ -367,8 +420,8 @@ main() {
 
   echo
   testCount=`expr $testCount + 1`
-  echo "$testCount) configAndReloadEMG"
-  configAndReloadEMG; ret=$?
+  echo "$testCount) setProductNameFilter"
+  setProductNameFilter; ret=$?
   if [ $ret -eq 0 ]; then
        echo "$STATUS_PASS_STR"
        testPassCount=`expr $testPassCount + 1`
@@ -380,8 +433,8 @@ main() {
 
   echo
   testCount=`expr $testCount + 1`
-  echo "$testCount) setProductNameFilter"
-  setProductNameFilter; ret=$?
+  echo "$testCount) configAndReloadEMG"
+  configAndReloadEMG; ret=$?
   if [ $ret -eq 0 ]; then
        echo "$STATUS_PASS_STR"
        testPassCount=`expr $testPassCount + 1`
@@ -416,6 +469,33 @@ main() {
        result=1
        testFailCount=`expr $testFailCount + 1`
   fi
+
+  echo
+  testCount=`expr $testCount + 1`
+  echo "$testCount) testAuthToken"
+  testAuthToken; ret=$?
+  if [ $ret -eq 0 ]; then
+       echo "$STATUS_PASS_STR"
+       testPassCount=`expr $testPassCount + 1`
+  else
+       echo "$STATUS_FAIL_STR"
+       result=1
+       testFailCount=`expr $testFailCount + 1`
+  fi
+  sleep 60
+  echo
+  testCount=`expr $testCount + 1`
+  echo "$testCount) testApiProxyWithAuthToken"
+  testApiProxyWithAuthToken; ret=$?
+  if [ $ret -eq 0 ]; then
+       echo "$STATUS_PASS_STR"
+       testPassCount=`expr $testPassCount + 1`
+  else
+       echo "$STATUS_FAIL_STR"
+       result=1
+       testFailCount=`expr $testFailCount + 1`
+  fi
+
 
   echo
   testCount=`expr $testCount + 1`
@@ -627,6 +707,32 @@ main() {
 
   echo
   testCount=`expr $testCount + 1`
+  echo "$testCount) configAndReloadEMGForPublicUrl"
+  configAndReloadEMGForPublicUrl; ret=$?
+  if [ $ret -eq 0 ]; then
+       echo "$STATUS_PASS_STR"
+       testPassCount=`expr $testPassCount + 1`
+  else
+       echo "$STATUS_FAIL_STR"
+       result=1
+       testFailCount=`expr $testFailCount + 1`
+  fi
+
+  echo
+  testCount=`expr $testCount + 1`
+  echo "$testCount) testPublicUrlProxy"
+  testPublicUrlProxy; ret=$?
+  if [ $ret -eq 0 ]; then
+       echo "$STATUS_PASS_STR"
+       testPassCount=`expr $testPassCount + 1`
+  else
+       echo "$STATUS_FAIL_STR"
+       result=1
+       testFailCount=`expr $testFailCount + 1`
+  fi
+
+  echo
+  testCount=`expr $testCount + 1`
   echo "$testCount) stopEMG"
   stopEMG; ret=$?
   if [ $ret -eq 0 ]; then
@@ -693,8 +799,35 @@ main() {
 
   echo
   testCount=`expr $testCount + 1`
+  echo "$testCount) undeployAPIProxy Quota"
+  undeployAPIProxy ${PROXY_NAME_QUOTA} ${MOCHA_ENV} ${proxyBundleVersion}; ret=$?
+  if [ $ret -eq 0 ]; then
+       echo "$STATUS_PASS_STR"
+       testPassCount=`expr $testPassCount + 1`
+  else
+       echo "$STATUS_FAIL_STR"
+       result=1
+       testFailCount=`expr $testFailCount + 1`
+  fi
+  rm -f ${PROXY_NAME_QUOTA}.zip
+
+  echo
+  testCount=`expr $testCount + 1`
   echo "$testCount) deleteAPIProxy"
   deleteAPIProxy ${PROXY_NAME}; ret=$?
+  if [ $ret -eq 0 ]; then
+       echo "$STATUS_PASS_STR"
+       testPassCount=`expr $testPassCount + 1`
+  else
+       echo "$STATUS_FAIL_STR"
+       result=1
+       testFailCount=`expr $testFailCount + 1`
+  fi
+
+  echo
+  testCount=`expr $testCount + 1`
+  echo "$testCount) deleteAPIProxy Quota"
+  deleteAPIProxy ${PROXY_NAME_QUOTA}; ret=$?
   if [ $ret -eq 0 ]; then
        echo "$STATUS_PASS_STR"
        testPassCount=`expr $testPassCount + 1`
