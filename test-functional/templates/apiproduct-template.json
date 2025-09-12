@@ -7,7 +7,7 @@
   "displayName": "$productName",
   "name": "$productName",
   "scopes": [],
-  "proxies": [ "$proxyName", "edgemicro-auth"],
+  "proxies": [ "$proxyName", "$quotaProxyName", "edgemicro-auth"],
   "environments": [ "test" ],
   "quota": "3",
   "quotaInterval": "1",
