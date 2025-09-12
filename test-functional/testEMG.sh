@@ -32,7 +32,7 @@ function installEMG() {
         logInfo "EMG being run from local repository"
     fi
   else
-    sudo npm install -g edgemicro > installEMG.txt 2>&1
+    npm install -g edgemicro > installEMG.txt 2>&1
     result=$?
     logInfo "Install EMG with status $status"
     if [ -z "$usingLocalRepository" ]; then
@@ -269,54 +269,138 @@ setProductNameFilter() {
 }
 
 testAPIProxy() {
+     local result=0
+     local ret=0
 
-  local result=0
-  local ret=0
+     logInfo "--- Testing API Proxy ---" >&2
 
-  logInfo "Test API Proxy"
+     # Get and log the credentials
+     local apiKeysJson
+     apiKeysJson=$(getDeveloperApiKey "${DEVELOPER_NAME}" "${DEVELOPER_APP_NAME}")
+     logInfo "Received API Keys JSON: ${apiKeysJson}" >&2
 
-  apiKey=$(getDeveloperApiKey ${DEVELOPER_NAME} ${DEVELOPER_APP_NAME})
-  curl -q -s http://localhost:8000/v1/${PROXY_NAME} -H "x-api-key: $apiKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
-  result=$(grep HTTP headers.txt | cut -d ' ' -f2)
-  if [ ${ret} -eq 0 -a ${result} -eq 200 ]; then
-       logInfo "Successfully tested API Proxy with code $result"
-  else
-       logError "Failed to test API Proxy with code $result"
-       ret=1
-  fi
+     local consumerKey
+     consumerKey=$(echo "$apiKeysJson" | jq -r '.consumerKey')
+     logInfo "Extracted Consumer Key: ${consumerKey}" >&2
 
-  rm -f headers.txt
+     if [ -z "$consumerKey" ]; then
+          logError "Consumer Key is empty. Aborting test." >&2
+          return 1
+     fi
 
-  return $ret
+     # Log the request details before sending
+     local proxyURL="http://localhost:8000/v1/${PROXY_NAME}"
+     logInfo "Sending request to: ${proxyURL}" >&2
 
+     # Execute curl, saving the response body to a file
+     curl -q -s "${proxyURL}" -H "x-api-key: ${consumerKey}" -D headers.txt -o proxy_response.txt ; ret=$?
+     result=$(grep HTTP headers.txt | cut -d ' ' -f2)
+
+     if [ ${ret} -eq 0 ] && [ "${result}" -eq 200 ]; then
+          logInfo "Successfully tested API Proxy with code $result" >&2
+     else
+          logError "Failed to test API Proxy with code $result" >&2
+          # On failure, print the full error response from the API
+          logError "--- API Error Response ---" >&2
+          cat proxy_response.txt >&2
+          logError "--------------------------" >&2
+          ret=1
+     fi
+
+     # Clean up both temporary files
+     rm -f headers.txt proxy_response.txt
+
+     return $ret
+}
+
+testAuthToken() {
+
+     local result=0
+     local ret=0
+
+     logInfo "Test Auth Token"
+     apiKeysJson=$(getDeveloperApiKey "${DEVELOPER_NAME}" "${DEVELOPER_APP_NAME}")
+     consumerKey=$(echo "$apiKeysJson" | jq -r '.consumerKey')
+     consumerSecret=$(echo "$apiKeysJson" | jq -r '.consumerSecret')
+     TOKEN=$(getAuthToken "$consumerKey" "$consumerSecret")
+     # Check if the TOKEN variable is not empty
+     if [ -n "$TOKEN" ]; then
+          logInfo "Successfully tested and retrieved auth token"
+     else
+          logError "Failed to test and retrieve auth token"
+          ret=1
+     fi
+     return $ret
+}
+
+testApiProxyWithAuthToken() {
+
+     local result=0
+     local ret=0
+
+     logInfo "Test Auth Token"
+     apiKeysJson=$(getDeveloperApiKey "${DEVELOPER_NAME}" "${DEVELOPER_APP_NAME}")
+     consumerKey=$(echo "$apiKeysJson" | jq -r '.consumerKey')
+     consumerSecret=$(echo "$apiKeysJson" | jq -r '.consumerSecret')
+     TOKEN=$(getAuthToken "$consumerKey" "$consumerSecret")
+     curl -q -s http://localhost:8000/v1/${PROXY_NAME} -H "Authorization: Bearer $TOKEN" -D headers.txt > /dev/null 2>&1 ; ret=$?
+     result=$(grep HTTP headers.txt | cut -d ' ' -f2)
+     if [ ${ret} -eq 0 -a ${result} -eq 200 ]; then
+          logInfo "Successfully tested API Proxy using auth token with code $result"
+     else
+          logError "Failed to test API Proxy using auth token with code $result"
+          ret=1
+     fi
+
+     rm -f headers.txt
+
+     return $ret
 }
 
 testQuota() {
-
   local result=0
   local ret=0
 
-  logInfo "Test Quota"
+  logInfo "Test Quota (1 request allowed, 10th should fail)" >&2
+  
+  apiKeysJson=$(getDeveloperApiKey "${DEVELOPER_NAME}" "${DEVELOPER_APP_NAME}")
+  consumerKey=$(echo "$apiKeysJson" | jq -r '.consumerKey')
 
-  apiKey=$(getDeveloperApiKey ${DEVELOPER_NAME} ${DEVELOPER_APP_NAME})
-
-  counter=1
-  while [ $counter -le 10 ]
-  do
-    curl -q -s http://localhost:8000/v1/${PROXY_NAME} -H "x-api-key: $apiKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
-    #echo $counter
-    ((counter++))
-  done
-  result=$(grep HTTP headers.txt | cut -d ' ' -f2)
-  if [ ${ret} -eq 0 -a ${result} -eq 403 ]; then
-       logInfo "Successfully tested quota with code $result"
-  else
-       logError "Failed to test quota with code $result"
-       ret=1
+  if [ -z "$consumerKey" ]; then
+      logError "Failed to get consumerKey for Quota test" >&2
+      return 1
   fi
 
-  return $ret
-
+  # Loop 10 times to test the quota of 3
+  local counter=1
+  while [ $counter -le 10 ]
+  do
+    logInfo "Making API call #$counter" >&2
+    curl -q -s http://localhost:8000/v1/${PROXY_NAME_QUOTA} -H "x-api-key: $consumerKey" -D headers.txt 
+    result=$(grep HTTP headers.txt | cut -d ' ' -f2)
+    logInfo "Received HTTP status: $result" >&2
+    echo
+    # Logic for calls 1 (should pass)
+    if [ $counter -eq 1 ]; then
+      if [ "$result" -ne 200 ]; then
+        logError "Call #$counter failed unexpectedly with code $result. Quota test failed." >&2
+        rm -f headers.txt
+        return 1
+      fi
+    # Logic for the 10th call (should be blocked)
+    elif [ $counter -eq 10 ]; then
+      if [ "$result" -ne 403 ]; then
+        logError "Call #4 was not blocked. Expected 403 but got $result. Quota test failed." >&2
+        rm -f headers.txt
+        return 1
+      fi
+    fi
+    ((counter++))
+  done
+  
+  logInfo "Successfully tested quota: First 1 call passed (200 OK) and the last was blocked (403 Forbidden)." >&2
+  rm -f headers.txt
+  return 0
 }
 
 testInvalidAPIKey() {
@@ -496,9 +580,10 @@ testInvalidProductNameFilter() {
 
   logInfo "Test Invalid Product Name Filter"
 
-  apiKey=$(getDeveloperApiKey ${DEVELOPER_NAME} ${DEVELOPER_APP_NAME})
+     apiKeysJson=$(getDeveloperApiKey "${DEVELOPER_NAME}" "${DEVELOPER_APP_NAME}")
+     consumerKey=$(echo "$apiKeysJson" | jq -r '.consumerKey')
 
-  curl -q -s http://localhost:8000/v1/${PROXY_NAME} -H "x-api-key: $apiKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
+  curl -q -s http://localhost:8000/v1/${PROXY_NAME} -H "x-api-key: $consumerKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
   result=$(grep HTTP headers.txt | cut -d ' ' -f2)
   if [ ${ret} -eq 0 -a ${result} -eq 200 ]; then
        logInfo "Successfully tested invalid product name filter with code $result"
@@ -542,6 +627,70 @@ resetInvalidProductNameFilter() {
 
 }
 
+configAndReloadEMGForPublicUrl() {
+
+  local result=0
+
+  logInfo "Configure and Reload EMG for Public URL"
+
+  if [ ! -f $EMG_CONFIG_FILE ];
+  then
+     result=1
+     logError "Failed to locate EMG configure file $EMG_CONFIG_FILE"
+     return $result
+  fi
+
+  #
+  node setYamlVars ${EMG_CONFIG_FILE} 'oauth.allowNoAuthorization' true 'oauth.allowInvalidAuthorization' true > tmp_emg_file.yaml
+  cp tmp_emg_file.yaml ${EMG_CONFIG_FILE}
+
+  EMG_KEY=$(cat edgemicro.configure.txt | grep "key:" | cut -d ' ' -f8)
+  EMG_SECRET=$(cat edgemicro.configure.txt | grep "secret:" | cut -d ' ' -f8)
+  if [ -z $EMG_KEY -o -z $EMG_SECRET ]; then
+     result=1
+     logError "Failed to retrieve emg key and secret from edgemicro.configure.txt"
+     return $result
+  fi
+
+  $EDGEMICRO reload -o $MOCHA_ORG -e $MOCHA_ENV -k $EMG_KEY -s $EMG_SECRET > /dev/null 2>&1
+  result=$?
+  if [ $result -ne 0 ]; then
+       logError "Failed to reload EMG for public url with status $result"
+  else
+       logInfo "Successfully reloaded EMG for public url with status $result"
+  fi
+
+  sleep 10
+
+  return $result
+
+}
+
+testPublicUrlProxy() {
+  local result=0
+  local ret=0
+  local response_body="" # Declare a variable to hold the response
+
+  logInfo "Test Invalid API Key with oauth.allowNoAuthorization: true && oauth.allowInvalidAuthorization: true"
+
+  # Capture the response body in the variable and headers in the file
+  response_body=$(curl -q -s http://localhost:8000/v1/${PROXY_NAME} -D headers.txt)
+  ret=$? # Get the exit code of curl
+
+  result=$(grep HTTP headers.txt | cut -d ' ' -f2)
+
+  if [ ${ret} -eq 0 -a ${result} -eq 200 ]; then
+       logInfo "Successfully tested public url with code $result"
+  else
+       logError "Failed to test public url with code $result"
+       ret=1
+  fi
+
+  rm -f headers.txt
+
+  return $ret
+}
+
 stopEMG() {
 
   local result=0
@@ -575,7 +724,7 @@ uninstallEMG() {
 
   logInfo "Uninstall EMG"
 
-  sudo npm uninstall -g edgemicro > uninstallEMG.txt 2>&1
+  npm uninstall -g edgemicro > uninstallEMG.txt 2>&1
   result=$? 
   if [ $result -ne 0 ]; then
        logError "Failed to uninstall EMG with status $result"
@@ -673,9 +822,10 @@ testInfoLogs() {
     logError "Failed to find system info log"
   fi
 
-  apiKey=$(getDeveloperApiKey ${DEVELOPER_NAME} ${DEVELOPER_APP_NAME})
+     apiKeysJson=$(getDeveloperApiKey "${DEVELOPER_NAME}" "${DEVELOPER_APP_NAME}")
+     consumerKey=$(echo "$apiKeysJson" | jq -r '.consumerKey')
 
-  curl -q -s http://localhost:8000/v1/${PROXY_NAME} -H "x-api-key: $apiKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
+  curl -q -s http://localhost:8000/v1/${PROXY_NAME} -H "x-api-key: $consumerKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
 
   sleep 5
 
@@ -735,9 +885,10 @@ testDebugLogs() {
     logError "Failed to find system debug log"
   fi
 
-  apiKey=$(getDeveloperApiKey ${DEVELOPER_NAME} ${DEVELOPER_APP_NAME})
+     apiKeysJson=$(getDeveloperApiKey "${DEVELOPER_NAME}" "${DEVELOPER_APP_NAME}")
+     consumerKey=$(echo "$apiKeysJson" | jq -r '.consumerKey')
 
-  curl -q -s http://localhost:8000/v1/${PROXY_NAME} -H "x-api-key: $apiKey-adding-too-log-header-for-testing-$apiKey-$apiKey-$apiKey-$apiKey-$apiKey-$apiKey-$apiKey-$apiKey-$apiKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
+  curl -q -s http://localhost:8000/v1/${PROXY_NAME} -H "x-api-key: $consumerKey-adding-too-log-header-for-testing-$consumerKey-$consumerKey-$consumerKey-$consumerKey-$consumerKey-$consumerKey-$consumerKey-$consumerKey-$consumerKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
 
   sleep 2
 
@@ -747,7 +898,7 @@ testDebugLogs() {
     logError "Failed to find event debug log"
   fi
 
-  curl -q -s http://localhost:8000/v1/invalidproxyFortesting -H "x-api-key: $apiKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
+  curl -q -s http://localhost:8000/v1/invalidproxyFortesting -H "x-api-key: $consumerKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
 
   sleep 5
 
@@ -785,9 +936,11 @@ testTraceEventLog() {
   reloadMicrogatewayNow
 
 
-  apiKey=$(getDeveloperApiKey ${DEVELOPER_NAME} ${DEVELOPER_APP_NAME})
+     apiKeysJson=$(getDeveloperApiKey "${DEVELOPER_NAME}" "${DEVELOPER_APP_NAME}")
+     consumerKey=$(echo "$apiKeysJson" | jq -r '.consumerKey')
 
-  curl -q -s http://localhost:8000/v1/invalidproxyFortesting -H "x-api-key: $apiKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
+
+  curl -q -s http://localhost:8000/v1/invalidproxyFortesting -H "x-api-key: $consumerKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
 
   sleep 5
 
@@ -825,9 +978,10 @@ testStackTraceConfig() {
   reloadMicrogatewayNow
 
 
-  apiKey=$(getDeveloperApiKey ${DEVELOPER_NAME} ${DEVELOPER_APP_NAME})
+     apiKeysJson=$(getDeveloperApiKey "${DEVELOPER_NAME}" "${DEVELOPER_APP_NAME}")
+     consumerKey=$(echo "$apiKeysJson" | jq -r '.consumerKey')
 
-  curl -q -s http://localhost:8000/v1/invalidproxyFortesting -H "x-api-key: $apiKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
+  curl -q -s http://localhost:8000/v1/invalidproxyFortesting -H "x-api-key: $consumerKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
 
   sleep 5
 
@@ -864,9 +1018,10 @@ testStackTraceFalseConfig() {
 
   reloadMicrogatewayNow
 
-  apiKey=$(getDeveloperApiKey ${DEVELOPER_NAME} ${DEVELOPER_APP_NAME})
+     apiKeysJson=$(getDeveloperApiKey "${DEVELOPER_NAME}" "${DEVELOPER_APP_NAME}")
+     consumerKey=$(echo "$apiKeysJson" | jq -r '.consumerKey')
 
-  curl -q -s http://localhost:8000/v1/invalidproxyFortesting -H "x-api-key: $apiKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
+  curl -q -s http://localhost:8000/v1/invalidproxyFortesting -H "x-api-key: $consumerKey" -D headers.txt > /dev/null 2>&1 ; ret=$?
 
   sleep 5
 

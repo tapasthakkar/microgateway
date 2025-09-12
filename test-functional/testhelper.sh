@@ -211,7 +211,7 @@ function getDeveloperApiKey() {
     local result=0
     local ret=0
 
-    apiKey=" "
+    apiKeysJson=" "
     apiDeveloper="$1"
     apiDeveloperApp="$2"
 
@@ -220,8 +220,7 @@ function getDeveloperApiKey() {
     result=$(grep HTTP headers.txt | cut -d ' ' -f2)
     if [ ${ret} -eq 0 -a ${result} -eq 200 ]; then
          logInfo "Successfully retrieved developer api key with code $result"
-#apiKey=$(cat getDeveloperApiKey.txt | jq -r .credentials[0].consumerKey)
-         apiKey=$(node extractConsumerKey getDeveloperApiKey.txt)
+          apiKeysJson=$(jq '.credentials[0] | {consumerKey, consumerSecret}' getDeveloperApiKey.txt)
     else
          logError "Failed to retrieve developer api key with code $result"
          ret=1
@@ -229,9 +228,57 @@ function getDeveloperApiKey() {
 
     rm -f getDeveloperApiKey.txt
     rm -f headers.txt
+     # echo "$apiKeysJson" >&2
+    echo "$apiKeysJson"
 
-    echo "$apiKey"
+}
 
+function getAuthToken() {
+    local result=0
+    local ret=0
+    local accessToken=""
+
+    # Check for required arguments
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        logError "getAuthToken requires client_id and client_secret as arguments" >&2
+        return 1
+    fi
+
+    local clientId="$1"
+    local clientSecret="$2"
+    local tokenURL="https://${MOCHA_ORG}-test.apigee.net/edgemicro-auth/token"
+
+    # Construct the JSON payload safely
+    local jsonData
+    jsonData=$(printf '{"client_id":"%s","client_secret":"%s","grant_type":"client_credentials"}' "$clientId" "$clientSecret")
+
+    # Make the curl request
+    curl -s --request POST \
+      --url "$tokenURL" \
+      --header 'Content-Type: application/json' \
+      --data "$jsonData" \
+      -D getAuthToken_headers.txt \
+      -o getAuthToken_response.txt
+    ret=$?
+
+    result=$(grep HTTP getAuthToken_headers.txt | cut -d ' ' -f2)
+    if [ ${ret} -eq 0 ] && [ "${result}" -eq 200 ]; then
+         logInfo "Successfully retrieved auth token with code $result" >&2
+         # Use jq to parse the access_token from the response body
+         accessToken=$(jq -r '.access_token' getAuthToken_response.txt)
+    else
+         logError "Failed to retrieve auth token with code $result" >&2
+         # Print the error response for debugging
+         cat getAuthToken_response.txt >&2
+         ret=1
+    fi
+
+    # Clean up temporary files
+    rm -f getAuthToken_headers.txt getAuthToken_response.txt
+
+    # Return the access token on stdout
+    echo "$accessToken"
+    return $ret
 }
 
 function deleteDeveloperApp() {
@@ -537,17 +584,37 @@ function createAPIProduct() {
 
     apiProductName="$1"
     apiProxyName="$2"
+    apiProxyNameQuota="$3"
 
-    node substVars "templates/apiproduct-template.json" "proxyName" "${apiProxyName}" "productName" "${apiProductName}" >  "${apiProductName}".json
+    # --- LOG 1: Print the arguments passed to the function ---
+    logInfo "--- Creating API Product ---" >&2
+    logInfo "Product Name: ${apiProductName}" >&2
+    logInfo "Proxy Name 1: ${apiProxyName}" >&2
+    logInfo "Proxy Name 2: ${apiProxyNameQuota}" >&2
+
+    # Generate the JSON payload
+    node substVars "templates/apiproduct-template.json" \
+        "proxyName" "${apiProxyName}" \
+        "productName" "${apiProductName}" \
+        "quotaProxyName" "${apiProxyNameQuota}"  >  "${apiProductName}".json
+
+    # --- LOG 2: Print the exact JSON payload that will be sent ---
+    logInfo "Generated JSON payload:" >&2
 
     productURL="${API_PRODUCT_URL}/${MOCHA_ORG}/apiproducts"
+
+    # --- LOG 3: Show the URL being called ---
+    logInfo "Sending POST request to: ${productURL}" >&2
 
     ${CURL} -q -s -H "Content-Type:application/json" -X POST -d @"${apiProductName}".json -H "Authorization: Bearer $MOCHA_BEARER_TOKEN" ${productURL} -D headers.txt -o createAPIProduct.txt > /dev/null 2>&1 ; ret=$?
     result=$(grep HTTP headers.txt | cut -d ' ' -f2)
     if [ ${ret} -eq 0 -a ${result} -eq 201 ]; then
-         logInfo "Successfully created API Product with code $result"
+         logInfo "Successfully created API Product with code $result" >&2
     else
-         logError "Failed to create API Product with code $result"
+         logError "Failed to create API Product with code $result" >&2
+         logError "--- API Error Response ---" >&2
+         cat createAPIProduct.txt >&2
+         logError "--------------------------" >&2
          ret=1
     fi
 
@@ -555,7 +622,6 @@ function createAPIProduct() {
     rm -f headers.txt
 
     return $ret
-
 }
 
 function listAPIProduct() {
