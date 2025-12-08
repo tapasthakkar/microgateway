@@ -11,8 +11,8 @@ For more information on how to use the producet see the [product documentation](
 
 The Microgateway is composed of 3 components
 
-* [microgateway-core](https://github.com/apigee/microgateway-core): a lightweight core server that forwards requests and responses between northbound and southbound endpoints.  Core also contains an event model that will call each plugin.    
-* [microgateway-config](https://github.com/apigee/microgateway-config): a config module that allows a user to pull down and load yaml configs from Apigee Edge
+* [core](./core/): a lightweight core server that forwards requests and responses between northbound and southbound endpoints.  Core also contains an event model that will call each plugin.    
+* [config](./config/): a config module that allows a user to pull down and load yaml configs from Apigee Edge
 * [microgateway-plugins](https://github.com/apigee/microgateway-plugins): a file system reference to a collection of directories that allow a user to extend the microgateway.  
 
 It also provides a CLI that an admin uses to wire/configure an instance of Microgateway with their Edge (Cloud or On-Premises) org as well as start Microgateway. Below is the workflow of the cli.  In order to load custom plugins you must load your plugin in the plugins directory.  The plugins directory is configured in the [default.yaml](config/default.yaml) or in the specified config directory.
