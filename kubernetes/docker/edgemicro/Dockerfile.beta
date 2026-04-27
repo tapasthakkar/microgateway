@@ -1,4 +1,4 @@
-FROM node:24.14.1-bookworm-slim
+FROM node:24.15.0-bookworm-slim
 
 # === SECURITY PATCH LAYER ===
 # 1. Update OS packages to resolve Debian CVEs 
