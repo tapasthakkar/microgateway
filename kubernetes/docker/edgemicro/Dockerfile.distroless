@@ -1,0 +1,17 @@
+# Stage 1: Build/Install dependencies using standard Node image
+FROM node:24.15.0-bookworm-slim AS builder
+WORKDIR /app
+
+# Install edgemicro locally so all dependencies are self-contained under /app/node_modules
+RUN npm install --omit=dev --omit=optional edgemicro@latest
+COPY docker-start.js ./
+
+# Stage 2: Runtime using Distroless
+FROM gcr.io/distroless/nodejs24-debian12
+WORKDIR /app
+COPY --from=builder /app /app
+
+ENV NODE_ENV=production
+EXPOSE 8000 8443
+
+CMD ["docker-start.js"]
