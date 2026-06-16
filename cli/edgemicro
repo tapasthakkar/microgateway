@@ -48,7 +48,8 @@ if (majorVersion % 2 !== 0) {
 
 // Warn if running on an LTS version that’s near end-of-support
 // (Here we check if the lowest allowed version is the current major)
-const minSupportedMajor = semver.minVersion(engines.node)?.major;
+const minSupportedSemver = semver.minVersion(engines.node);
+const minSupportedMajor = minSupportedSemver ? minSupportedSemver.major : undefined;
 if (majorVersion === minSupportedMajor) {
     writeConsoleLog(
         'log',
