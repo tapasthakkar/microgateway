@@ -28,21 +28,47 @@ installEMG() {
       return 0
       ;;
     npm)
+      export NPM_CONFIG_PREFIX="${NPM_CONFIG_PREFIX:-${HOME}/.npm-global}"
+      mkdir -p "${NPM_CONFIG_PREFIX}/bin" "${NPM_CONFIG_PREFIX}/lib/node_modules"
+      rm -f "${NPM_CONFIG_PREFIX}/bin/edgemicro"
+      export PATH="${NPM_CONFIG_PREFIX}/bin:${PATH}"
+      local npm_registry="${EMG_NPM_REGISTRY:-https://registry.npmjs.org/}"
       local pkg_spec="edgemicro@${EMG_NPM_VERSION:-latest}"
-      logInfo "Installing published EMG package from npm registry (${pkg_spec})..."
-      npm install -g "${pkg_spec}" > "${EMG_WORK_DIR}/installEMG.txt" 2>&1 || return 1
-      export EDGEMICRO="$(command -v edgemicro 2>/dev/null || echo edgemicro)"
+      logInfo "Installing published EMG package from npm registry (${pkg_spec}, registry=${npm_registry})..."
+      local ret=0
+      npm install -g --prefix="${NPM_CONFIG_PREFIX}" "${pkg_spec}" --registry="${npm_registry}" > "${EMG_WORK_DIR}/installEMG.txt" 2>&1 || ret=$?
+      if [ "${ret}" -ne 0 ] || [ ! -x "${NPM_CONFIG_PREFIX}/bin/edgemicro" ]; then
+        logError "Failed to install ${pkg_spec} from registry ${npm_registry} into ${NPM_CONFIG_PREFIX}/bin/edgemicro"
+        cat "${EMG_WORK_DIR}/installEMG.txt" >&2 || true
+        return 1
+      fi
+      hash -r 2>/dev/null || true
+      export EDGEMICRO="${NPM_CONFIG_PREFIX}/bin/edgemicro"
       return 0
       ;;
     master|*)
-      logInfo "Packing and installing EMG globally from repository (${REPO_ROOT})..."
-      local tarball
+      export NPM_CONFIG_PREFIX="${NPM_CONFIG_PREFIX:-${HOME}/.npm-global}"
+      mkdir -p "${NPM_CONFIG_PREFIX}/bin" "${NPM_CONFIG_PREFIX}/lib/node_modules"
+      rm -f "${NPM_CONFIG_PREFIX}/bin/edgemicro"
+      export PATH="${NPM_CONFIG_PREFIX}/bin:${PATH}"
+      local npm_registry="${EMG_NPM_REGISTRY:-https://registry.npmjs.org/}"
+      logInfo "Packing and installing EMG globally from repository (${REPO_ROOT}, registry=${npm_registry})..."
+      local tarball ret=0
       tarball=$(cd "${REPO_ROOT}" && npm pack --quiet | tail -n 1)
-      npm install -g "${REPO_ROOT}/${tarball}" > "${EMG_WORK_DIR}/installEMG.txt" 2>&1
-      local ret=$?
+      if [ -z "${tarball}" ] || [ ! -f "${REPO_ROOT}/${tarball}" ]; then
+        logError "Failed to pack repository tarball from ${REPO_ROOT}"
+        return 1
+      fi
+      npm install -g --prefix="${NPM_CONFIG_PREFIX}" "${REPO_ROOT}/${tarball}" --registry="${npm_registry}" > "${EMG_WORK_DIR}/installEMG.txt" 2>&1 || ret=$?
       rm -f "${REPO_ROOT}/${tarball}"
-      export EDGEMICRO="$(command -v edgemicro 2>/dev/null || echo edgemicro)"
-      return $ret
+      if [ "${ret}" -ne 0 ] || [ ! -x "${NPM_CONFIG_PREFIX}/bin/edgemicro" ]; then
+        logError "Failed to install packed tarball ${tarball} into ${NPM_CONFIG_PREFIX}/bin/edgemicro"
+        cat "${EMG_WORK_DIR}/installEMG.txt" >&2 || true
+        return 1
+      fi
+      hash -r 2>/dev/null || true
+      export EDGEMICRO="${NPM_CONFIG_PREFIX}/bin/edgemicro"
+      return 0
       ;;
   esac
 }
@@ -56,7 +82,36 @@ checkEMGVersion() {
   local emgVersion nodejsVersion
   emgVersion=$(grep 'current edgemicro version is' "${version_out}" | awk '{print $NF}')
   nodejsVersion=$(grep 'current nodejs version is' "${version_out}" | awk '{print $NF}')
+  if [ -z "${emgVersion}" ]; then
+    logError "Failed to parse edgemicro version from CLI output"
+    cat "${version_out}" >&2 || true
+    return 1
+  fi
   logInfo "EMG version is ${emgVersion} and Node.js version is ${nodejsVersion}"
+  if [ "${EMG_TEST_MODE:-}" = "npm" ]; then
+    local expected_version=""
+    if [ -n "${EMG_NPM_VERSION:-}" ] && [ "${EMG_NPM_VERSION}" != "latest" ]; then
+      expected_version="${EMG_NPM_VERSION#v}"
+    else
+      local npm_registry="${EMG_NPM_REGISTRY:-https://registry.npmjs.org/}"
+      expected_version=$(npm view edgemicro version --registry="${npm_registry}" 2>/dev/null | tail -n 1 | tr -d '[:space:]')
+      if [ -z "${expected_version}" ]; then
+        logError "Failed to query latest edgemicro version from ${npm_registry}"
+        return 1
+      fi
+    fi
+    if [ "${emgVersion}" != "${expected_version}" ]; then
+      logError "Installed edgemicro version (${emgVersion}) does not match expected npm version (${expected_version})"
+      return 1
+    fi
+  elif [ "${EMG_TEST_MODE:-}" = "master" ] && [ -f "${REPO_ROOT}/package.json" ]; then
+    local repo_version
+    repo_version=$(node -p "require(process.argv[1]).version" "${REPO_ROOT}/package.json" 2>/dev/null || true)
+    if [ -n "${repo_version}" ] && [ "${emgVersion}" != "${repo_version}" ]; then
+      logError "Installed master tarball version (${emgVersion}) does not match package.json version (${repo_version})"
+      return 1
+    fi
+  fi
   return 0
 }
 
@@ -139,7 +194,7 @@ uninstallEMG() {
   logInfo "Uninstall EMG (mode=${EMG_TEST_MODE:-branch})"
   local ret=0
   if [ "${EMG_TEST_MODE:-branch}" = "master" ] || [ "${EMG_TEST_MODE:-branch}" = "npm" ]; then
-    npm uninstall -g edgemicro > "${EMG_WORK_DIR}/uninstallEMG.txt" 2>&1 || ret=$?
+    npm uninstall -g --prefix="${NPM_CONFIG_PREFIX:-${HOME}/.npm-global}" edgemicro > "${EMG_WORK_DIR}/uninstallEMG.txt" 2>&1 || ret=$?
   fi
   rm -rf "${EMG_CONFIG_DIR}"
   rm -f edgemicro.logs edgemicro.sock edgemicro.configure.txt headers.txt tmp_emg_file.yaml
