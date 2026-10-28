@@ -53,14 +53,14 @@ resolve_edgemicro_mode() {
   local mode_arg="${1:-}"
   local filter_arg="${2:-}"
 
-  # Ensure Node 20+ is active if available in NVM
+  # Ensure Node 22+ is active if available in NVM
   local current_major
   current_major=$(node -p "process.versions.node.split('.')[0]" 2>/dev/null || echo "0")
-  if [ "${current_major}" -lt 20 ] && [ -d "${HOME}/.nvm/versions/node" ]; then
-    local nvm_v20
-    nvm_v20=$(ls -d "${HOME}/.nvm/versions/node/v20"* 2>/dev/null | sort -V | tail -n 1)
-    if [ -n "${nvm_v20}" ] && [ -d "${nvm_v20}/bin" ]; then
-      export PATH="${nvm_v20}/bin:${PATH}"
+  if [ "${current_major}" -lt 22 ] && [ -d "${HOME}/.nvm/versions/node" ]; then
+    local nvm_node
+    nvm_node=$(ls -d "${HOME}/.nvm/versions/node/v24"* "${HOME}/.nvm/versions/node/v22"* 2>/dev/null | sort -V | tail -n 1)
+    if [ -n "${nvm_node}" ] && [ -d "${nvm_node}/bin" ]; then
+      export PATH="${nvm_node}/bin:${PATH}"
     fi
   fi
 
